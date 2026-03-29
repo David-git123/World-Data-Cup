@@ -9,7 +9,8 @@
 <button onclick="mostrarForm('selecao')">Seleção</button>
 <button onclick="mostrarForm('jogadores')">Jogadores</button>
 
-<form method = "post" action="/" id="jogadores" style="display:none">
+<form method = "post" action="/jogadores" id="jogadores" style="display:none">
+
     <label for="operacao">Tipo de operação</label>
     <select name="operacao" id = "operacao">
         <option value = "Inserir">Inserir</option>
@@ -35,9 +36,10 @@
     <label for="idade">Idade do atleta</label>
     <input type="text" name="idade" id = "idade">
 
+    <button type="submit">Enviar</button>
 </form>
 
-<form id="selecao" style="display:none;">
+<form id="selecao" method="post" action="/selecao" style="display:none;">
 
     <label for="operacao1">Tipo de operação</label>
     <select name="operacao" id = "operacao1">
@@ -61,6 +63,7 @@
     <label for="rankingFifa">Ranking da Fifa</label>
     <input type="text" name="rankingFifa" id = "rankingFifa">
 
+    <button type="submit">Enviar</button>
 </form>
 
 <script>

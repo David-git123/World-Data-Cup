@@ -25,7 +25,7 @@ public class Jogador {
 		return inscricao;
 	}
 	
-	public String posicao() {
+	public String getPosicao() {
 		return posicao;
 	}
 	public String getSelecao() {
