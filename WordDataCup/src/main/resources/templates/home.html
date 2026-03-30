@@ -9,32 +9,34 @@
 <button onclick="mostrarForm('selecao')">Seleção</button>
 <button onclick="mostrarForm('jogadores')">Jogadores</button>
 
+<p th:text="${mensagem}"></p>
+
 <form method = "post" action="/jogadores" id="jogadores" style="display:none">
 
     <label for="operacao">Tipo de operação</label>
     <select name="operacao" id = "operacao">
         <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Inserir</option>
-        <option value = "Alterar">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
     </select>
     <br>
     <label for="n_camisa">Número da camisa</label>
-    <input type="text"  name ="n_camisa" id = "n_camisa">
+    <input type="number"  name ="n_camisa" id = "n_camisa">
     <br>
     <label for="n_inscricao">Número de inscrição</label>
-    <input type="text" name="inscricao" id = "n_inscricao">
+    <input type="number" name="n_inscricao" id = "n_inscricao">
     <br>
     <label for="posicao">Posição</label>
     <input type="text" name="posicao"  id = "posicao">
     <br>
-    <label for="selecao_nome">Seleção</label>
-    <input type="text" name="selecao_nome" id = "selecao_nome">
+    <label for="selecao_id">Seleção</label>
+    <input type="number" name="selecao_id" id = "selecao_id">
     <br>
     <label for="nome_atleta">Nome do atleta</label>
     <input type="text" name="nome_atleta" id = "nome_atleta">
     <br>
     <label for="idade">Idade do atleta</label>
-    <input type="text" name="idade" id = "idade">
+    <input type="number" name="idade" id = "idade">
 
     <button type="submit">Enviar</button>
 </form>
@@ -44,24 +46,24 @@
     <label for="operacao1">Tipo de operação</label>
     <select name="operacao" id = "operacao1">
         <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Inserir</option>
-        <option value = "Alterar">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
     </select>
     <br>
     <label for="inscricao">Numero de inscrição</label>
-    <input type="text"  name ="n_inscricao" id = "inscricao">
+    <input type="number"  name ="n_inscricao" id = "inscricao">
     <br>
     <label for="pais_origem">País de origem</label>
-    <input type="text" name="pais_origem" id = "pais_origem">
+    <input type="text" name="paisDeOrigem" id = "pais_origem">
     <br>
     <label for="mediaIdade">Média de idade</label>
-    <input type="text" name="mediaIdade"  id = "mediaIdade">
+    <input type="number" name="mediaIdade"  id = "mediaIdade">
     <br>
     <label for="mediaGols">Média de gols</label>
-    <input type="text" name="mediaGols" id = "mediaGols">
+    <input type="number" name="mediaGols" id = "mediaGols">
     <br>
     <label for="rankingFifa">Ranking da Fifa</label>
-    <input type="text" name="rankingFifa" id = "rankingFifa">
+    <input type="number" name="rankingFifa" id = "rankingFifa">
 
     <button type="submit">Enviar</button>
 </form>

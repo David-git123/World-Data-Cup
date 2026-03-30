@@ -9,9 +9,9 @@ public class Selecao {
 	private int mediaGols;
 	private int rankingFifa;
 	
-	public Selecao(int inscricao, String paisDeOrigem, int mediaIdade, int mediaGols, int rankingFifa ) {
-		this.inscricao = inscricao;
-		this.paisDeOrigem = paisDeOrigem;
+	public Selecao(int n_inscricao, String pais_origem, int mediaIdade, int mediaGols, int rankingFifa ) {
+		this.inscricao = n_inscricao;
+		this.paisDeOrigem = pais_origem;
 		 this.mediaIdade = mediaIdade;
 		 this.mediaGols = mediaGols;
 		 this.rankingFifa = rankingFifa;

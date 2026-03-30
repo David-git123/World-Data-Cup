@@ -4,16 +4,16 @@ public class Jogador {
 	private int numeroCamisa;
 	private int inscricao;
 	private String posicao;
-	private String selecao;
+	private int selecao_id;
 	private String nome;
 	private int idade;
 	
-	public Jogador(int numeroCamisa, int inscricao, String posicao, String selecao, String nome, int idade) {
-		this.numeroCamisa = numeroCamisa;
-		this.inscricao = inscricao;
+	public Jogador(int n_camisa, int n_inscricao, String posicao, int selecao_id, String nome_atleta, int idade) {
+		this.numeroCamisa = n_camisa;
+		this.inscricao = n_inscricao;
 		this.posicao = posicao;
-		this.selecao = selecao;
-		this.nome = nome;
+		this.selecao_id = selecao_id;
+		this.nome = nome_atleta;
 		this.idade = idade;
 	}
 	
@@ -28,8 +28,8 @@ public class Jogador {
 	public String getPosicao() {
 		return posicao;
 	}
-	public String getSelecao() {
-		return selecao;
+	public int getSelecao() {
+		return selecao_id;
 	}
 	
 	public String getNome() {
