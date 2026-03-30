@@ -15,7 +15,7 @@ public class SelecaoRepository {
 
     public void inserirSelecao(Selecao selecao) {
 
-        String sql = "INSERT INTO SELECAO (inscricao, paisDeOrigem, mediaIdade, mediaGols, rankingFifa) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Selecao (inscricao, paisDeOrigem, mediaIdade, mediaGols, rankingFifa) VALUES (?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
                 selecao.getInscricao(),
@@ -23,6 +23,30 @@ public class SelecaoRepository {
                 selecao.getMediaIdade(),
                 selecao.getMediaGols(),
                 selecao.getRankingFifa()
+        );
+    }
+
+    public void atualizarSelecao(Selecao selecao) {
+
+        String sql = "UPDATE Selecao SET paisDeOrigem = ?, mediaIdade =?, mediaGols = ?, rankingFifa = ? WHERE inscricao = ?";
+
+        jdbcTemplate.update(sql,
+                selecao.getInscricao(),
+                selecao.getPaisDeOrigem(),
+                selecao.getMediaIdade(),
+                selecao.getMediaGols(),
+                selecao.getRankingFifa(),
+                selecao.getInscricao()
+        );
+    }
+
+
+    public void deletarSelecao(Selecao selecao) {
+
+        String sql = "DELETE FROM Selecao WHERE inscricao = ?";
+
+        jdbcTemplate.update(sql,
+                selecao.getInscricao()
         );
     }
 }

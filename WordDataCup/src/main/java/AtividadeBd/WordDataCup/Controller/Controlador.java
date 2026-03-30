@@ -17,18 +17,30 @@ public class Controlador{
     JogadorRepository jogadorRepository;
     @Autowired
     SelecaoRepository selecaoRepository;
+
+
+
     @GetMapping("/")
     public String retornarPagina(){
 
         return "home";
     }
+
     @PostMapping("/jogadores")
+
     public String operacaoJogadores(@RequestParam("operacao") String operacao, @RequestParam("n_camisa") int camisa,@RequestParam("n_inscricao") int inscricao,
                                     @RequestParam("posicao") String posicao,@RequestParam("selecao_id") int selecao_id,@RequestParam("nome_atleta") String nome_atleta,
                                     @RequestParam("idade") int idade, Model model){
+
         Jogador jogador = new Jogador(camisa,inscricao,posicao,selecao_id,nome_atleta,idade);
         if(operacao.equals("Inserir")){
-            jogadorRepository.inserir((jogador));
+            jogadorRepository.inserirJogador((jogador));
+        }
+        if(operacao.equals("Alterar")){
+            jogadorRepository.atualizarJogador((jogador));
+        }
+        if(operacao.equals("Deletar")){
+            jogadorRepository.deletarJogador((jogador));
         }
         return "redirect:/";
 
@@ -39,16 +51,15 @@ public class Controlador{
                                   @RequestParam("mediaGols") int mediaGols,@RequestParam("rankingFifa") int rankingFifa,
                                   @RequestParam("mediaIdade") int mediaIdade, Model model){
         Selecao selecao = new Selecao(inscricao,paisDeOrigem,mediaGols,rankingFifa,mediaIdade);
-        if(operacao.equals("Inserir")){
-            try{
-                selecaoRepository.inserirSelecao((selecao));
-                return "redirect:/";
-            }
-            catch (Exception e){
-                model.addAttribute("mensagem","Deu ruim");
-                return "redirect:/";
 
-            }
+        if(operacao.equals("Inserir")){
+            selecaoRepository.inserirSelecao((selecao));
+        }
+        if(operacao.equals("Alterar")){
+            selecaoRepository.atualizarSelecao((selecao));
+        }
+        if(operacao.equals("Deletar")){
+            selecaoRepository.deletarSelecao((selecao));
         }
         return "redirect:/";
     }
