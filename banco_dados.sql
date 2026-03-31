@@ -1,6 +1,6 @@
-CREATE DATABASE Atividade_bd8;
+CREATE DATABASE Atividade_bd9;
 
-USE Atividade_bd8;
+USE Atividade_bd9;
 
 CREATE TABLE grupo(
 	letra_identificadora char(1) PRIMARY KEY,
@@ -15,14 +15,14 @@ CREATE TABLE pais_sede(
     numero_estadios INT,
     nome_mascote varchar(30));
     
-CREATE TABLE estadio(
+CREATE //TABLE estadio(
 	id INT PRIMARY KEY,
     cidade varchar(50),
     capacidade_maxima INT CHECK (capacidade_maxima > 0),
     nome varchar(30),
     fk_pais_sede_nome_pais varchar(30),
     FOREIGN KEY (fk_pais_sede_nome_pais) REFERENCES pais_sede(nome_pais) 
-    ON UPDATE CASCADE);
+    ON DELETE CASCADE);
     
 CREATE TABLE selecao(
 	inscricao INT PRIMARY KEY,
@@ -75,10 +75,11 @@ CREATE TABLE jogo(
 	tipo_jogo varchar(30));
     
 CREATE TABLE contido(
-	fk_jogo_id INT REFERENCES jogo(id), 
+	fk_jogo_id INT, 
 	fk_selecao_inscricao INT,
     CONSTRAINT pk_contido PRIMARY KEY(fk_jogo_id, fk_selecao_inscricao),
-	FOREIGN KEY (fk_selecao_inscricao) REFERENCES selecao(inscricao) ON DELETE CASCADE);
+	FOREIGN KEY (fk_selecao_inscricao) REFERENCES selecao(inscricao) ON DELETE CASCADE,
+	FOREIGN KEY (fk_jogo_id) REFERENCES jogo(id) ON DELETE CASCADE);
 
 CREATE TABLE jogador(
 	inscricao INT PRIMARY KEY, 
@@ -86,10 +87,10 @@ CREATE TABLE jogador(
     posicao varchar(30), 
     nome varchar(30) NOT NULL, 
     idade INT, 
-    fk_selecao_inscricao INT REFERENCES selecao(inscricao), 
+    fk_selecao_inscricao INT, 
     capitao INT,
     FOREIGN KEY (fk_selecao_inscricao) REFERENCES selecao(inscricao) ON DELETE SET NULL,
-    FOREIGN KEY (capitao) REFERENCES jogador(inscricao) ON DELETE CASCADE );
+    FOREIGN KEY (capitao) REFERENCES jogador(inscricao) ON DELETE CASCADE);
     
 CREATE TABLE posicao (
     NomePosicao VARCHAR(30),
@@ -103,9 +104,10 @@ CREATE TABLE posicao (
 CREATE TABLE participa_jogo_estadio_jogador(
 	fk_jogador_inscricao INT,
 	fk_jogo_id INT REFERENCES jogo(id), 
-	fk_estadio_id INT REFERENCES estadio(id),
+	fk_estadio_id INT,
 	CONSTRAINT pk_participa PRIMARY KEY(fk_jogador_inscricao, fk_jogo_id),
- 	FOREIGN KEY (fk_jogador_inscricao) REFERENCES jogador(inscricao) ON DELETE CASCADE);
+ 	FOREIGN KEY (fk_jogador_inscricao) REFERENCES jogador(inscricao) ON DELETE CASCADE,
+	FOREIGN KEY (fk_estadio_id) REFERENCES estadio(id) ON DELETE CASCADE);
 
 INSERT INTO grupo (letra_identificadora) VALUES 
 ('A'), ('B'), ('C'), ('D'), ('E'), ('F'), ('G'), ('H'), ('I'), ('J'),
