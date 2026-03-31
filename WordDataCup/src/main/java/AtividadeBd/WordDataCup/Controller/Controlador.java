@@ -29,11 +29,11 @@ public class Controlador{
     @PostMapping("/jogadores")
 
     public String operacaoJogadores(@RequestParam("operacao") String operacao, @RequestParam("n_camisa") int camisa,@RequestParam("n_inscricao") int inscricao,
-                                    @RequestParam("posicao") String posicao,@RequestParam("selecao_id") int selecao_id,@RequestParam("nome_atleta") String nome_atleta,
+                                    @RequestParam("posicao") String posicao,@RequestParam("nome_atleta") String nome_atleta,
                                     @RequestParam("idade") int idade, @RequestParam("fk_selecao_inscricao") int fk_selecao_inscricao, @RequestParam("capitao") int capitao,
                                     Model model){
 
-        Jogador jogador = new Jogador(camisa,inscricao,posicao,selecao_id,nome_atleta,idade,fk_selecao_inscricao,capitao);
+        Jogador jogador = new Jogador(camisa,inscricao,posicao,nome_atleta,idade,fk_selecao_inscricao,capitao);
         if(operacao.equals("Inserir")){
             jogadorRepository.inserirJogador((jogador));
         }
@@ -48,12 +48,12 @@ public class Controlador{
     }
 
     @PostMapping("/selecao")
-    public String operacaoSelecao(@RequestParam("operacao") String operacao, @RequestParam("n_inscricao") int inscricao,@RequestParam("paisDeOrigem") String paisDeOrigem,
+    public String operacaoSelecao(@RequestParam("operacao") String operacao, @RequestParam("n_inscricao") int inscricao,
                                   @RequestParam("mediaGols") int mediaGols,@RequestParam("rankingFifa") int rankingFifa,
-                                  @RequestParam("mediaIdade") int mediaIdade,@RequestParam("fk_letra_identificadora") String fk_letra_identificadora,
+                                  @RequestParam("mediaIdade") int mediaIdade,@RequestParam("fk_grupo_letra_identificadora") String fk_letra_identificadora,
                                   @RequestParam("pontuacao") int pontuacao, @RequestParam("nome") String nome,@RequestParam("continente") String continente,
                                   Model model){
-        Selecao selecao = new Selecao(inscricao,paisDeOrigem,mediaIdade,mediaGols,rankingFifa,continente,pontuacao,nome,fk_letra_identificadora);
+        Selecao selecao = new Selecao(inscricao,mediaIdade,mediaGols,rankingFifa,continente,pontuacao,nome,fk_letra_identificadora);
 
         if(operacao.equals("Inserir")){
             selecaoRepository.inserirSelecao((selecao));

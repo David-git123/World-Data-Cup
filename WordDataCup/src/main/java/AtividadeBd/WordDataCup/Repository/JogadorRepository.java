@@ -15,13 +15,12 @@ public class JogadorRepository {
 
     public void inserirJogador(Jogador jogador) {
 
-        String sql = "INSERT INTO Jogador (numero_camisa, inscricao, posicao, selecao_id, nome, idade, fK_selecao_inscricao, capitao) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO jogador (numero_da_camisa, inscricao, posicao, nome, idade, fK_selecao_inscricao, capitao) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
                 jogador.getNumeroCamisa(),
                 jogador.getInscricao(),
                 jogador.getPosicao(),
-                jogador.getSelecao(),
                 jogador.getNome(),
                 jogador.getIdade(),
                 jogador.getFkSelecaoInscricao(),
@@ -32,12 +31,11 @@ public class JogadorRepository {
     }
 
     public void atualizarJogador(Jogador jogador) {
-        String sql = "UPDATE Jogador SET numero_camisa = ?, posicao = ?, selecao_id = ?, nome= ?, idade = ?, fk_selecao_inscricao= ?, capitao = ?  WHERE inscricao = ?";
+        String sql = "UPDATE jogador SET numero_da_camisa = ?, posicao = ?,nome= ?, idade = ?, fk_selecao_inscricao= ?, capitao = ?  WHERE inscricao = ?";
 
         jdbcTemplate.update(sql,
                 jogador.getNumeroCamisa(),
                 jogador.getPosicao(),
-                jogador.getSelecao(),
                 jogador.getNome(),
                 jogador.getIdade(),
                 jogador.getInscricao(),
@@ -49,7 +47,7 @@ public class JogadorRepository {
     }
 
     public void deletarJogador(Jogador jogador) {
-        String sql = "DELETE FROM Jogador WHERE inscricao = ?";
+        String sql = "DELETE FROM jogador WHERE inscricao = ?";
 
         jdbcTemplate.update(sql,
                 jogador.getInscricao()

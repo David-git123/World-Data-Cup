@@ -29,14 +29,17 @@
     <label for="posicao">Posição</label>
     <input type="text" name="posicao"  id = "posicao">
     <br>
-    <label for="selecao_id">Seleção</label>
-    <input type="number" name="selecao_id" id = "selecao_id">
-    <br>
     <label for="nome_atleta">Nome do atleta</label>
     <input type="text" name="nome_atleta" id = "nome_atleta">
     <br>
     <label for="idade">Idade do atleta</label>
     <input type="number" name="idade" id = "idade">
+    <br>
+    <label for="fk_sele_insc">Inscrição da seleção (FK) </label>
+    <input type="number" name="fk_selecao_inscricao" id = "fk_sele_insc">
+    <br>
+    <label for="capitao">Incrição do capitão (FK)</label>
+    <input type="number" name="capitao" id = "capitao">
 
     <button type="submit">Enviar</button>
 </form>
@@ -53,9 +56,6 @@
     <label for="inscricao">Numero de inscrição</label>
     <input type="number"  name ="n_inscricao" id = "inscricao">
     <br>
-    <label for="pais_origem">País de origem</label>
-    <input type="text" name="paisDeOrigem" id = "pais_origem">
-    <br>
     <label for="mediaIdade">Média de idade</label>
     <input type="number" name="mediaIdade"  id = "mediaIdade">
     <br>
@@ -64,9 +64,23 @@
     <br>
     <label for="rankingFifa">Ranking da Fifa</label>
     <input type="number" name="rankingFifa" id = "rankingFifa">
+    <br>
+    <label for="fk_gp_id">Letra identificadora do Grupo (FK)</label>
+    <input type="text" name="fk_grupo_letra_identificadora" id = "fk_gp_id">
+    <br>
+    <label for="continente">Continente</label>
+    <input type="text" name="continente" id = "continente">
+    <br>
+    <label for="pontuacao">Pontuação</label>
+    <input type="number" name="pontuacao" id = "pontuacao">
+    <br>
+    <label for="nome">Nome da seleção</label>
+    <input type="text" name="nome" id = "nome">
 
     <button type="submit">Enviar</button>
 </form>
+
+
 
 <script>
     function mostrarForm(formId) {

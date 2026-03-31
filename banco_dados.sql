@@ -1,6 +1,6 @@
-CREATE DATABASE atividade_bd;
+CREATE DATABASE Atividade_bd8;
 
-USE atividade_bd;
+USE Atividade_bd8;
 
 CREATE TABLE grupo(
 	letra_identificadora char(1) PRIMARY KEY,
@@ -30,35 +30,41 @@ CREATE TABLE selecao(
     media_idade INT, 
     media_gols INT DEFAULT 0,
     continente varchar(30),
-    fk_grupo_letra_identificadora char(1) REFERENCES grupo(letra_identificadora),
+    fk_grupo_letra_identificadora char(1),
     pontuacao INT CHECK (pontuacao >= 0),
-    nome varchar(30) NOT NULL);
+    nome varchar(30) NOT NULL,
+	FOREIGN KEY(fk_grupo_letra_identificadora) REFERENCES grupo(letra_identificadora) ON DELETE CASCADE);
 
 CREATE TABLE mascote(
 	pais varchar(30) , 
     animal varchar(30) , 
     nome varchar(30),  
-    fk_selecao_inscricao INT REFERENCES selecao(inscricao),
-    CONSTRAINT pk_mascote PRIMARY KEY(pais, animal, fk_selecao_inscricao));
+    fk_selecao_inscricao INT,
+    CONSTRAINT pk_mascote PRIMARY KEY(pais, animal, fk_selecao_inscricao),
+	FOREIGN KEY (fk_selecao_inscricao) REFERENCES selecao(inscricao) ON DELETE CASCADE);
 
 CREATE TABLE comissao_tecnica(
 	inscricao INT PRIMARY KEY, 
-    fk_inscricao_selecao INT REFERENCES selecao(inscricao));
+    fk_inscricao_selecao INT,
+    FOREIGN KEY (fk_inscricao_selecao) REFERENCES selecao(inscricao) ON DELETE CASCADE);
     
 CREATE TABLE treinador(
-	fk_comissao_tecnica_inscricao INT PRIMARY KEY REFERENCES comissao_tecnica(inscricao),
+	fk_comissao_tecnica_inscricao INT PRIMARY KEY,
 	estilo_de_jogo varchar(30),
-    nome varchar(30));
+    nome varchar(30),
+	FOREIGN KEY(fk_comissao_tecnica_inscricao) REFERENCES comissao_tecnica(inscricao) ON DELETE CASCADE);
 
 CREATE TABLE preparador_fisico(
-	fk_comissao_tecnica_inscricao INT PRIMARY KEY REFERENCES comissao_tecnica(inscricao),
+	fk_comissao_tecnica_inscricao INT PRIMARY KEY,
 	especializacao varchar(30),
-    nome varchar(30));
+    nome varchar(30),
+	FOREIGN KEY (fk_comissao_tecnica_inscricao) REFERENCES comissao_tecnica(inscricao) ON DELETE CASCADE);
     
 CREATE TABLE auxiliar_tecnico(
-	fk_comissao_tecnica_inscricao INT PRIMARY KEY REFERENCES comissao_tecnica(inscricao),
+	fk_comissao_tecnica_inscricao INT PRIMARY KEY,
 	especialidade varchar(30),
-    nome varchar(30));
+    nome varchar(30),
+	FOREIGN KEY (fk_comissao_tecnica_inscricao) REFERENCES comissao_tecnica(inscricao) ON DELETE CASCADE);
     
 CREATE TABLE jogo(
 	id INT PRIMARY KEY,
@@ -70,8 +76,9 @@ CREATE TABLE jogo(
     
 CREATE TABLE contido(
 	fk_jogo_id INT REFERENCES jogo(id), 
-	fk_selecao_inscricao INT REFERENCES selecao(inscricao),
-    CONSTRAINT pk_contido PRIMARY KEY(fk_jogo_id, fk_selecao_inscricao));
+	fk_selecao_inscricao INT,
+    CONSTRAINT pk_contido PRIMARY KEY(fk_jogo_id, fk_selecao_inscricao),
+	FOREIGN KEY (fk_selecao_inscricao) REFERENCES selecao(inscricao) ON DELETE CASCADE);
 
 CREATE TABLE jogador(
 	inscricao INT PRIMARY KEY, 
@@ -82,18 +89,23 @@ CREATE TABLE jogador(
     fk_selecao_inscricao INT REFERENCES selecao(inscricao), 
     capitao INT,
     FOREIGN KEY (fk_selecao_inscricao) REFERENCES selecao(inscricao) ON DELETE SET NULL,
-    FOREIGN KEY (capitao) REFERENCES jogador(inscricao));
+    FOREIGN KEY (capitao) REFERENCES jogador(inscricao) ON DELETE CASCADE );
     
-CREATE TABLE posicao(
-	NomePosicao varchar(30),
-    inscricao_jogador INT REFERENCES jogador(inscricao),
-    CONSTRAINT pk_posicao PRIMARY KEY (NomePosicao, inscricao_jogador));
+CREATE TABLE posicao (
+    NomePosicao VARCHAR(30),
+    inscricao_jogador INT,
+    PRIMARY KEY (NomePosicao, inscricao_jogador),
+    FOREIGN KEY (inscricao_jogador) 
+        REFERENCES jogador(inscricao) 
+        ON DELETE CASCADE
+);
     
 CREATE TABLE participa_jogo_estadio_jogador(
-	fk_jogador_inscricao INT REFERENCES jogador(inscricao),
+	fk_jogador_inscricao INT,
 	fk_jogo_id INT REFERENCES jogo(id), 
 	fk_estadio_id INT REFERENCES estadio(id),
-	CONSTRAINT pk_participa PRIMARY KEY(fk_jogador_inscricao, fk_jogo_id));
+	CONSTRAINT pk_participa PRIMARY KEY(fk_jogador_inscricao, fk_jogo_id),
+ 	FOREIGN KEY (fk_jogador_inscricao) REFERENCES jogador(inscricao) ON DELETE CASCADE);
 
 INSERT INTO grupo (letra_identificadora) VALUES 
 ('A'), ('B'), ('C'), ('D'), ('E'), ('F'), ('G'), ('H'), ('I'), ('J'),
