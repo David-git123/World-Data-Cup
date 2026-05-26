@@ -26,7 +26,7 @@ O mini mundo tem como tema principal a copa do mundo de clubes que acontecerá n
 
 ## Modelo lógico
 
-![Diagrama de Entidade e Relacionamento](imagens/logico.jpeg)
+![Diagrama de Entidade e Relacionamento](imagens/lógico.jpeg)
 
 ## Tecnologias utilizadas
 
