@@ -1,283 +1,653 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Data Cup</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #eef4ee;
+            color: #1a2e1a;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 60%, #1b5e20 100%);
+            color: #fff;
+            padding: 2rem 2rem 1.75rem;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,.25);
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                45deg, transparent, transparent 30px,
+                rgba(255,255,255,.03) 30px, rgba(255,255,255,.03) 60px
+            );
+        }
+        header h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -.5px; position: relative; }
+        header p  { font-size: 1rem; opacity: .8; margin-top: .35rem; position: relative; }
+
+        .alert {
+            background: #d4edda; border: 1px solid #b8dfc4;
+            color: #155724; padding: .75rem 1.25rem;
+            margin: 1.25rem auto; max-width: 900px;
+            border-radius: 8px; font-size: .95rem;
+        }
+
+        main { max-width: 1060px; margin: 2rem auto; padding: 0 1.25rem 3rem; }
+
+        .tier { margin-bottom: 2.5rem; }
+
+        .tier-header {
+            display: flex; align-items: center; gap: .75rem;
+            margin-bottom: 1rem;
+        }
+        .tier-badge {
+            background: #1a472a; color: #fff;
+            padding: .25rem .7rem; border-radius: 20px;
+            font-size: .72rem; font-weight: 700;
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .tier-header h2 { font-size: 1.05rem; font-weight: 700; color: #1a472a; white-space: nowrap; }
+        .tier-line { flex: 1; height: 2px; background: linear-gradient(to right, #2d6a4f44, transparent); }
+
+        .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: .9rem; }
+
+        .card {
+            background: #fff; border-radius: 14px;
+            padding: 1.15rem 1rem 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+            border: 1.5px solid #e0ede0;
+            transition: transform .18s, box-shadow .18s;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.12); }
+
+        .card-icon  { font-size: 1.9rem; margin-bottom: .4rem; }
+        .card-title { font-size: .95rem; font-weight: 700; color: #1a472a; margin-bottom: .2rem; }
+        .card-desc  { font-size: .76rem; color: #666; margin-bottom: .85rem; line-height: 1.4; }
+
+        .fk-tag {
+            display: inline-block;
+            background: #fffbea; border: 1px solid #f5c842;
+            color: #7a5800; border-radius: 4px;
+            padding: .05rem .35rem; font-size: .68rem; font-weight: 700;
+        }
+
+        .btn-add {
+            width: 100%; background: #1a472a; color: #fff;
+            border: none; padding: .5rem; border-radius: 8px;
+            font-size: .85rem; font-weight: 600; cursor: pointer;
+            transition: background .18s, transform .1s;
+        }
+        .btn-add:hover  { background: #2d6a4f; }
+        .btn-add:active { transform: scale(.97); }
+
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            opacity: 0; pointer-events: none;
+            transition: opacity .22s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: #fff; border-radius: 18px;
+            width: 100%; max-width: 500px; max-height: 90vh;
+            overflow-y: auto; padding: 1.75rem 1.75rem 1.5rem;
+            transform: translateY(22px) scale(.97);
+            transition: transform .22s;
+            box-shadow: 0 24px 48px rgba(0,0,0,.22);
+        }
+        .modal-overlay.active .modal { transform: translateY(0) scale(1); }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.4rem; padding-bottom: .9rem;
+            border-bottom: 2px solid #e8f5e9;
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 800; color: #1a472a; }
+        .modal-close {
+            background: none; border: none; font-size: 1.3rem;
+            cursor: pointer; color: #888; line-height: 1;
+            padding: .2rem .4rem; border-radius: 6px;
+            transition: color .15s, background .15s;
+        }
+        .modal-close:hover { color: #1a472a; background: #e8f5e9; }
+
+        .modal form {
+            display: none;
+            flex-direction: column;
+            gap: .85rem;
+        }
+        .modal form.form-active { display: flex; }
+
+        .form-group { display: flex; flex-direction: column; gap: .28rem; }
+
+        .form-group label {
+            font-size: .8rem; font-weight: 700; color: #444;
+            letter-spacing: .01em;
+        }
+        .form-group label .fk-tag { margin-left: .3rem; }
+
+        .form-group input,
+        .form-group select {
+            padding: .55rem .8rem;
+            border: 1.5px solid #cce3cc;
+            border-radius: 8px; font-size: .9rem;
+            transition: border-color .18s, box-shadow .18s;
+            width: 100%; background: #fafcfa;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none; border-color: #1a472a;
+            box-shadow: 0 0 0 3px rgba(26,71,42,.12);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #1a472a, #2d6a4f);
+            color: #fff; border: none; padding: .72rem;
+            border-radius: 10px; font-size: .95rem; font-weight: 700;
+            cursor: pointer; margin-top: .4rem;
+            transition: opacity .18s, transform .1s;
+        }
+        .btn-submit:hover  { opacity: .9; }
+        .btn-submit:active { transform: scale(.98); }
+
+        .modal::-webkit-scrollbar { width: 5px; }
+        .modal::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .modal::-webkit-scrollbar-thumb { background: #2d6a4f88; border-radius: 10px; }
+    </style>
 </head>
 <body>
 
-<button onclick="mostrarForm('selecao')">Seleção</button>
-<button onclick="mostrarForm('jogadores')">Jogadores</button>
-<button onclick="mostrarForm('treinador')">Treinador</button>
-<button onclick = "mostrarForm('preparador')">Preparador físico</button>
-<button onclick = "mostrarForm('pais')">País Sede</button>
-<button onclick = "mostrarForm('mascote')">Mascote</button>
-<button onclick = "mostrarForm('jogo')">Jogo</button>
-<button onclick = "mostrarForm('estadio')">Estadio</button>
-<button onclick = "mostrarForm('comissao')">Comissão técnica</button>
-<button onclick = "mostrarForm('auxiliar')">Auxiliar técnico</button>
-<button onclick = "mostrarForm('grupo')">Grupo</button>
-button onclick = "<mostrar></mostrar>
+<header>
+    <h1>⚽ World Data Cup</h1>
+    <p>Sistema de Gerenciamento de Dados da Copa do Mundo</p>
+</header>
 
-<p th:text="${mensagem}"></p>
+<main>
+    <div th:if="${mensagem}" class="alert" th:text="${mensagem}"></div>
 
-<form method = "post" action="/jogadores" id="jogadores" style="display:none">
+    <section class="tier">
+        <div class="tier-header">
+            <span class="tier-badge">Nível 1</span>
+            <h2>Tabelas Independentes</h2>
+            <div class="tier-line"></div>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="card-icon">🗂️</div>
+                <div class="card-title">Grupo</div>
+                <div class="card-desc">Grupos da fase de grupos</div>
+                <button class="btn-add" onclick="abrirModal('grupo', 'Grupo')">+ Adicionar</button>
+            </div>
+            <div class="card">
+                <div class="card-icon">🌍</div>
+                <div class="card-title">País Sede</div>
+                <div class="card-desc">Países sede do torneio</div>
+                <button class="btn-add" onclick="abrirModal('pais', 'País Sede')">+ Adicionar</button>
+            </div>
+            <div class="card">
+                <div class="card-icon">⚽</div>
+                <div class="card-title">Jogo</div>
+                <div class="card-desc">Partidas do torneio</div>
+                <button class="btn-add" onclick="abrirModal('jogo', 'Jogo')">+ Adicionar</button>
+            </div>
+        </div>
+    </section>
 
-    <label for="operacao">Tipo de operação</label>
-    <select name="operacao" id = "operacao">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <br>
-    <label for="n_camisa">Número da camisa</label>
-    <input type="number"  name ="n_camisa" id = "n_camisa">
-    <br>
-    <label for="n_inscricao">Número de inscrição</label>
-    <input type="number" name="n_inscricao" id = "n_inscricao">
-    <br>
-    <label for="posicao">Posição</label>
-    <input type="text" name="posicao"  id = "posicao">
-    <br>
-    <label for="nome_atleta">Nome do atleta</label>
-    <input type="text" name="nome_atleta" id = "nome_atleta">
-    <br>
-    <label for="idade">Idade do atleta</label>
-    <input type="number" name="idade" id = "idade">
-    <br>
-    <label for="fk_sele_insc">Inscrição da seleção (FK) </label>
-    <input type="number" name="fk_selecao_inscricao" id = "fk_sele_insc">
-    <br>
-    <label for="capitao">Incrição do capitão (FK)</label>
-    <input type="number" name="capitao" id = "capitao">
+    <section class="tier">
+        <div class="tier-header">
+            <span class="tier-badge">Nível 2</span>
+            <h2>Dependem de Grupo / País Sede</h2>
+            <div class="tier-line"></div>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="card-icon">🏳️</div>
+                <div class="card-title">Seleção</div>
+                <div class="card-desc">Seleções participantes <span class="fk-tag">FK: Grupo</span></div>
+                <button class="btn-add" onclick="abrirModal('selecao', 'Seleção')">+ Adicionar</button>
+            </div>
+            <div class="card">
+                <div class="card-icon">🏟️</div>
+                <div class="card-title">Estádio</div>
+                <div class="card-desc">Estádios do torneio <span class="fk-tag">FK: País Sede</span></div>
+                <button class="btn-add" onclick="abrirModal('estadio', 'Estádio')">+ Adicionar</button>
+            </div>
+        </div>
+    </section>
 
-    <button type="submit">Enviar</button>
-</form>
+    <section class="tier">
+        <div class="tier-header">
+            <span class="tier-badge">Nível 3</span>
+            <h2>Dependem de Seleção</h2>
+            <div class="tier-line"></div>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="card-icon">👤</div>
+                <div class="card-title">Jogador</div>
+                <div class="card-desc">Atletas das seleções <span class="fk-tag">FK: Seleção</span></div>
+                <button class="btn-add" onclick="abrirModal('jogadores', 'Jogador')">+ Adicionar</button>
+            </div>
+            <div class="card">
+                <div class="card-icon">📋</div>
+                <div class="card-title">Comissão Técnica</div>
+                <div class="card-desc">Equipe técnica <span class="fk-tag">FK: Seleção</span></div>
+                <button class="btn-add" onclick="abrirModal('comissao', 'Comissão Técnica')">+ Adicionar</button>
+            </div>
+            <div class="card">
+                <div class="card-icon">🦁</div>
+                <div class="card-title">Mascote</div>
+                <div class="card-desc">Mascote da seleção <span class="fk-tag">FK: Seleção</span></div>
+                <button class="btn-add" onclick="abrirModal('mascote', 'Mascote')">+ Adicionar</button>
+            </div>
+        </div>
+    </section>
 
-<form id="selecao" method="post" action="/selecao" style="display:none;">
+    <section class="tier">
+        <div class="tier-header">
+            <span class="tier-badge">Nível 4</span>
+            <h2>Dependem de Comissão Técnica</h2>
+            <div class="tier-line"></div>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="card-icon">🧑‍💼</div>
+                <div class="card-title">Treinador</div>
+                <div class="card-desc">Treinadores <span class="fk-tag">FK: Comissão</span></div>
+                <button class="btn-add" onclick="abrirModal('treinador', 'Treinador')">+ Adicionar</button>
+            </div>
+            <div class="card">
+                <div class="card-icon">💪</div>
+                <div class="card-title">Preparador Físico</div>
+                <div class="card-desc">Preparadores físicos <span class="fk-tag">FK: Comissão</span></div>
+                <button class="btn-add" onclick="abrirModal('preparador', 'Preparador Físico')">+ Adicionar</button>
+            </div>
+            <div class="card">
+                <div class="card-icon">🎯</div>
+                <div class="card-title">Auxiliar Técnico</div>
+                <div class="card-desc">Auxiliares técnicos <span class="fk-tag">FK: Comissão</span></div>
+                <button class="btn-add" onclick="abrirModal('auxiliar', 'Auxiliar Técnico')">+ Adicionar</button>
+            </div>
+        </div>
+    </section>
+</main>
 
-    <label for="operacao1">Tipo de operação</label>
-    <select name="operacao" id = "operacao1">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <br>
-    <label for="inscricao">Numero de inscrição</label>
-    <input type="number"  name ="n_inscricao" id = "inscricao">
-    <br>
-    <label for="mediaIdade">Média de idade</label>
-    <input type="number" name="mediaIdade"  id = "mediaIdade">
-    <br>
-    <label for="mediaGols">Média de gols</label>
-    <input type="number" name="mediaGols" id = "mediaGols">
-    <br>
-    <label for="rankingFifa">Ranking da Fifa</label>
-    <input type="number" name="rankingFifa" id = "rankingFifa">
-    <br>
-    <label for="fk_gp_id">Letra identificadora do Grupo (FK)</label>
-    <input type="text" name="fk_grupo_letra_identificadora" id = "fk_gp_id">
-    <br>
-    <label for="continente">Continente</label>
-    <input type="text" name="continente" id = "continente">
-    <br>
-    <label for="pontuacao">Pontuação</label>
-    <input type="number" name="pontuacao" id = "pontuacao">
-    <br>
-    <label for="nome">Nome da seleção</label>
-    <input type="text" name="nome" id = "nome">
+<div class="modal-overlay" id="modalOverlay" onclick="fecharModalOverlay(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title" id="modalTitle">Formulário</span>
+            <button class="modal-close" onclick="fecharModal()" title="Fechar">✕</button>
+        </div>
 
-    <button type="submit">Enviar</button>
-</form>
+        <form method="post" action="/jogadores" id="jogadores">
+            <div class="form-group">
+                <label for="operacao">Tipo de operação</label>
+                <select name="operacao" id="operacao">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="n_camisa">Número da camisa</label>
+                <input type="number" name="n_camisa" id="n_camisa">
+            </div>
+            <div class="form-group">
+                <label for="n_inscricao">Número de inscrição</label>
+                <input type="number" name="n_inscricao" id="n_inscricao">
+            </div>
+            <div class="form-group">
+                <label for="posicao">Posição</label>
+                <input type="text" name="posicao" id="posicao">
+            </div>
+            <div class="form-group">
+                <label for="nome_atleta">Nome do atleta</label>
+                <input type="text" name="nome_atleta" id="nome_atleta">
+            </div>
+            <div class="form-group">
+                <label for="idade">Idade do atleta</label>
+                <input type="number" name="idade" id="idade">
+            </div>
+            <div class="form-group">
+                <label for="fk_sele_insc">Inscrição da seleção <span class="fk-tag">FK</span></label>
+                <input type="number" name="fk_selecao_inscricao" id="fk_sele_insc">
+            </div>
+            <div class="form-group">
+                <label for="capitao">Inscrição do capitão <span class="fk-tag">FK</span></label>
+                <input type="number" name="capitao" id="capitao">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
 
-<form method = "post" id = "treinador" action = "/treinador" style="display:none;">
-    <label for="operacao2">Tipo de operação</label>
-    <select name="operacao" id = "operacao2">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <label for ="fk_comissao_tecnica_inscricao">Inscrição da comissão ténica (FK)</label>
-    <input id = "fk_comissao_tecnica_inscricao" type = "number" name="fk_comissao_tecnica_inscricao">
-    <br>
-    <label for ="estilo_jogo">Estilo de jogo</label>
-    <input id = "estilo_jogo" type = "text" name="estilo_jogo">
-    <br>
-    <label for ="estilo_jogo">Estilo de jogo</label>
-    <input id = "esquema_tatico_pref" type = "text" name="esquema_tatico_pref">
-    <br>
-    <label for ="metodologia_treino">Metodologia de treino</label>
-    <input id = "metodologia_treino" type = "text" name="metodologia_treino">
-</form>
+        <form id="selecao" method="post" action="/selecao">
+            <div class="form-group">
+                <label for="operacao1">Tipo de operação</label>
+                <select name="operacao" id="operacao1">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="inscricao">Número de inscrição</label>
+                <input type="number" name="n_inscricao" id="inscricao">
+            </div>
+            <div class="form-group">
+                <label for="nome">Nome da seleção</label>
+                <input type="text" name="nome" id="nome">
+            </div>
+            <div class="form-group">
+                <label for="continente">Continente</label>
+                <input type="text" name="continente" id="continente">
+            </div>
+            <div class="form-group">
+                <label for="rankingFifa">Ranking da FIFA</label>
+                <input type="number" name="rankingFifa" id="rankingFifa">
+            </div>
+            <div class="form-group">
+                <label for="mediaIdade">Média de idade</label>
+                <input type="number" name="mediaIdade" id="mediaIdade">
+            </div>
+            <div class="form-group">
+                <label for="mediaGols">Média de gols</label>
+                <input type="number" name="mediaGols" id="mediaGols">
+            </div>
+            <div class="form-group">
+                <label for="pontuacao">Pontuação</label>
+                <input type="number" name="pontuacao" id="pontuacao">
+            </div>
+            <div class="form-group">
+                <label for="fk_gp_id">Letra identificadora do grupo <span class="fk-tag">FK</span></label>
+                <input type="text" name="fk_grupo_letra_identificadora" id="fk_gp_id" maxlength="1">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
 
-<form method = "post" id = "preparador" action = "/preparador" style="display:none;">
-    <label for="operacao3">Tipo de operação</label>
-    <select name="operacao" id = "operacao3">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <label for ="fk_comissao_tecnica_inscricao1">Inscrição da comissão ténica (FK)</label>
-    <input id = "fk_comissao_tecnica_inscricao1" type = "number" name="fk_comissao_tecnica_inscricao">
-    <br>
-    <label for ="especializacao">Estilo de jogo</label>
-    <input id = "especializacao" type = "text" name="especializacao">
-    <br>
-    <label for ="metodologia_treino1">Estilo de jogo</label>
-    <input id = "metodologia_treino1" type = "text" name="metodologia_treino">
-</form>
+        <form method="post" id="treinador" action="/treinador">
+            <div class="form-group">
+                <label for="operacao2">Tipo de operação</label>
+                <select name="operacao" id="operacao2">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fk_comissao_tecnica_inscricao">Inscrição da comissão técnica <span class="fk-tag">FK</span></label>
+                <input id="fk_comissao_tecnica_inscricao" type="number" name="fk_comissao_tecnica_inscricao">
+            </div>
+            <div class="form-group">
+                <label for="estilo_jogo">Estilo de jogo</label>
+                <input id="estilo_jogo" type="text" name="estilo_jogo">
+            </div>
+            <div class="form-group">
+                <label for="esquema_tatico_pref">Esquema tático preferido</label>
+                <input id="esquema_tatico_pref" type="text" name="esquema_tatico_pref">
+            </div>
+            <div class="form-group">
+                <label for="metodologia_treino">Metodologia de treino</label>
+                <input id="metodologia_treino" type="text" name="metodologia_treino">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
 
-<form method = "post" id = "pais" action = "/pais" style="display:none;">
-    <label for="operacao4">Tipo de operação</label>
-    <select name="operacao" id = "operacao4">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <label for ="nome_pais">Inscrição da comissão ténica (FK)</label>
-    <input id = "nome_pais" type = "text" name="nome_pais">
-    <br>
-    <label for ="numero_jogos_pais">Estilo de jogo</label>
-    <input id = "numero_jogos_pais" type = "number" name="numero_jogos_pais">
-    <br>
-</form>
+        <form method="post" id="preparador" action="/preparador">
+            <div class="form-group">
+                <label for="operacao3">Tipo de operação</label>
+                <select name="operacao" id="operacao3">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fk_comissao_tecnica_inscricao1">Inscrição da comissão técnica <span class="fk-tag">FK</span></label>
+                <input id="fk_comissao_tecnica_inscricao1" type="number" name="fk_comissao_tecnica_inscricao">
+            </div>
+            <div class="form-group">
+                <label for="especializacao">Especialização</label>
+                <input id="especializacao" type="text" name="especializacao">
+            </div>
+            <div class="form-group">
+                <label for="metodologia_treino1">Metodologia de treino</label>
+                <input id="metodologia_treino1" type="text" name="metodologia_treino">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
 
-<form method = "post" id = "mascote" action = "/mascote" style="display:none;">
-    <label for="operacao5">Tipo de operação</label>
-    <select name="operacao" id = "operacao5">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <label for ="nome1">Inscrição da comissão ténica (FK)</label>
-    <input id = "nome1" type = "text" name="nome">
-    <br>
-    <label for ="id">Estilo de jogo</label>
-    <input id = "id" type = "number" name="id">
-    <br>
-    <label for ="fk_inscricao_selecao">Inscricao da Selecao(FK)</label>
-    <input id = "fk_inscricao_selecao" type = "number" name="fk_inscricao_selecao">
-</form>
+        <form method="post" id="pais" action="/pais">
+            <div class="form-group">
+                <label for="operacao4">Tipo de operação</label>
+                <select name="operacao" id="operacao4">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nome_pais">Nome do país</label>
+                <input id="nome_pais" type="text" name="nome_pais">
+            </div>
+            <div class="form-group">
+                <label for="numero_jogos_pais">Número de jogos do país</label>
+                <input id="numero_jogos_pais" type="number" name="numero_jogos_pais">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
 
-<form method = "post" id = "jogo" action = "/jogo" style="display:none;">
-    <label for="operacao6">Tipo de operação</label>
-    <select name="operacao" id = "operacao6">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <label for ="nome_pais1">Nome do pais</label>
-    <input id = "nome_pais1" type = "text" name="nome_pais">
-    <br>
-    <label for ="placar">Estilo de jogo</label>
-    <input id = "placar" type = "text" name="placar">
-    <br>
-    <label for ="data">Estilo de jogo</label>
-    <input id = "data" type = "datetime-local" name="data">
-    <br>
-    <label for ="vencedor">Estilo de jogo</label>
-    <input id = "vencedor" type = "text" name="vencedor">
-    <br>
-    <label for ="perdedor">Estilo de jogo</label>
-    <input id = "perdedor" type = "text" name="perdedor">
-    <br>
-    <label for ="tipo_jogo">Estilo de jogo</label>
-    <input id = "tipo_jogo" type = "text" name="tipo_jogo">
-</form>
+        <form method="post" id="mascote" action="/mascote">
+            <div class="form-group">
+                <label for="operacao5">Tipo de operação</label>
+                <select name="operacao" id="operacao5">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nome1">Nome do mascote</label>
+                <input id="nome1" type="text" name="nome">
+            </div>
+            <div class="form-group">
+                <label for="id">ID do mascote</label>
+                <input id="id" type="number" name="id">
+            </div>
+            <div class="form-group">
+                <label for="fk_inscricao_selecao">Inscrição da seleção <span class="fk-tag">FK</span></label>
+                <input id="fk_inscricao_selecao" type="number" name="fk_inscricao_selecao">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
 
-<form method = "post" id = "estadio" action = "/estadio" style="display:none;">
-    <label for="operacao7">Tipo de operação</label>
-    <select name="operacao" id = "operacao7">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <label for ="id1">Nome do pais</label>
-    <input id = "id1" type = "number" name="id">
-    <br>
-    <label for ="cidade">Estilo de jogo</label>
-    <input id = "cidade" type = "text" name="cidade">
-    <br>
-    <label for ="fk_pais_sede_nome">Estilo de jogo</label>
-    <input id = "fk_pais_sede_nome" type = "text" name="fk_pais_sede_nome">
-    <br>
-    <label for ="capacidade_maxima">Estilo de jogo</label>
-    <input id = "capacidade_maxima" type = "number" name="capacidade_maxima">
-    <br>
-    <label for ="nome4">Estilo de jogo</label>
-    <input id = "nome4" type = "text" name="nome">
-</form>
+        <form method="post" id="jogo" action="/jogo">
+            <div class="form-group">
+                <label for="operacao6">Tipo de operação</label>
+                <select name="operacao" id="operacao6">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nome_pais1">ID do jogo</label>
+                <input id="nome_pais1" type="number" name="nome_pais">
+            </div>
+            <div class="form-group">
+                <label for="placar">Placar</label>
+                <input id="placar" type="text" name="placar">
+            </div>
+            <div class="form-group">
+                <label for="data">Data e hora</label>
+                <input id="data" type="datetime-local" name="data">
+            </div>
+            <div class="form-group">
+                <label for="vencedor">Vencedor</label>
+                <input id="vencedor" type="text" name="vencedor">
+            </div>
+            <div class="form-group">
+                <label for="perdedor">Perdedor</label>
+                <input id="perdedor" type="text" name="perdedor">
+            </div>
+            <div class="form-group">
+                <label for="tipo_jogo">Tipo de jogo</label>
+                <input id="tipo_jogo" type="text" name="tipo_jogo">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
 
-<form method = "post" id = "comissao" action = "/comissao" style="display:none;">
-    <label for="operacao8">Tipo de operação</label>
-    <select name="operacao" id = "operacao8">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <label for ="nome3">Nome do pais</label>
-    <input id = "nome3" type = "text" name="nome3">
-    <br>
-    <label for ="nacionalidade">Estilo de jogo</label>
-    <input id = "nacionalidade" type = "text" name="nacionalidade">
-    <br>
-    <label for ="inscricao1">Estilo de jogo</label>
-    <input id = "inscricao1" type = "number" name="inscricao">
-    <br>
-    <label for ="fk_inscricao_selecao2">Estilo de jogo</label>
-    <input id = "fk_inscricao_selecao2" type = "number" name="fk_inscricao_selecao2">
-    <br>
-    <label for ="nome5">Estilo de jogo</label>
-    <input id = "nome5" type = "text" name="nome">
-</form>
+        <form method="post" id="estadio" action="/estadio">
+            <div class="form-group">
+                <label for="operacao7">Tipo de operação</label>
+                <select name="operacao" id="operacao7">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="id1">ID do estádio</label>
+                <input id="id1" type="number" name="id">
+            </div>
+            <div class="form-group">
+                <label for="nome4">Nome do estádio</label>
+                <input id="nome4" type="text" name="nome">
+            </div>
+            <div class="form-group">
+                <label for="cidade">Cidade</label>
+                <input id="cidade" type="text" name="cidade">
+            </div>
+            <div class="form-group">
+                <label for="capacidade_maxima">Capacidade máxima</label>
+                <input id="capacidade_maxima" type="number" name="capacidade_maxima">
+            </div>
+            <div class="form-group">
+                <label for="fk_pais_sede_nome">Nome do país sede <span class="fk-tag">FK</span></label>
+                <input id="fk_pais_sede_nome" type="text" name="fk_pais_sede_nome">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
 
-<form method = "post" id = "auxiliar" action = "/auxiliar" style="display:none;">
-    <label for="operacao9">Tipo de operação</label>
-    <select name="operacao" id = "operacao9">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <label for ="fk_comissao_tecnica_inscricao2">Nome do pais</label>
-    <input id = "fk_comissao_tecnica_inscricao2" type = "number" name="fk_comissao_tenica_inscricao">
-    <br>
-    <label for ="especialidade">Estilo de jogo</label>
-    <input id = "especialidade" type = "text" name="especialidade">
-    <br>
-    <label for ="foco_setorial">Estilo de jogo</label>
-    <input id = "foco_setorial" type = "text" name="foco_setorial">
-</form>
-<form method = "post" id = "grupo" action = "/grupo" style="display:none;">
-    <label for="operacao10">Tipo de operação</label>
-    <select name="operacao" id = "operacao10">
-        <option value = "Inserir">Inserir</option>
-        <option value = "Deletar">Deletar</option>
-        <option value = "Alterar">Alterar</option>
-    </select>
-    <label for ="letra_identificadora">Nome do pais</label>
-    <input id = "letra_identificadora" type = "text" name="letra_identificadora">
-    <br>
-    <label for ="lugar1">Estilo de jogo</label>
-    <input id = "lugar1" type = "text" name="lugar1">
-    <br>
-    <label for ="lugar2">Estilo de jogo</label>
-    <input id = "lugar2" type = "text" name="fk_pais_sede_nome">
-    <br>
-    <label for ="lugar3">Estilo de jogo</label>
-    <input id = "lugar3" type = "text" name="lugar3">
-    <br>
-    <label for ="lugar4">Estilo de jogo</label>
-    <input id = "lugar4" type = "text" name="lugar4">
-</form>
+        <form method="post" id="comissao" action="/comissao">
+            <div class="form-group">
+                <label for="operacao8">Tipo de operação</label>
+                <select name="operacao" id="operacao8">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="inscricao1">Inscrição</label>
+                <input id="inscricao1" type="number" name="inscricao">
+            </div>
+            <div class="form-group">
+                <label for="nome5">Nome</label>
+                <input id="nome5" type="text" name="nome">
+            </div>
+            <div class="form-group">
+                <label for="nacionalidade">Nacionalidade</label>
+                <input id="nacionalidade" type="text" name="nacionalidade">
+            </div>
+            <div class="form-group">
+                <label for="fk_inscricao_selecao2">Inscrição da seleção <span class="fk-tag">FK</span></label>
+                <input id="fk_inscricao_selecao2" type="number" name="fk_inscricao_selecao2">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
+
+        <form method="post" id="auxiliar" action="/auxiliar">
+            <div class="form-group">
+                <label for="operacao9">Tipo de operação</label>
+                <select name="operacao" id="operacao9">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fk_comissao_tecnica_inscricao2">Inscrição da comissão técnica <span class="fk-tag">FK</span></label>
+                <input id="fk_comissao_tecnica_inscricao2" type="number" name="fk_comissao_tenica_inscricao">
+            </div>
+            <div class="form-group">
+                <label for="especialidade">Especialidade</label>
+                <input id="especialidade" type="text" name="especialidade">
+            </div>
+            <div class="form-group">
+                <label for="foco_setorial">Foco setorial</label>
+                <input id="foco_setorial" type="text" name="foco_setorial">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
+
+        <form method="post" id="grupo" action="/grupo">
+            <div class="form-group">
+                <label for="operacao10">Tipo de operação</label>
+                <select name="operacao" id="operacao10">
+                    <option value="Inserir">Inserir</option>
+                    <option value="Deletar">Deletar</option>
+                    <option value="Alterar">Alterar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="letra_identificadora">Letra identificadora</label>
+                <input id="letra_identificadora" type="text" name="letra_identificadora" maxlength="1">
+            </div>
+            <div class="form-group">
+                <label for="lugar1">1º lugar</label>
+                <input id="lugar1" type="text" name="lugar1">
+            </div>
+            <div class="form-group">
+                <label for="lugar2">2º lugar</label>
+                <input id="lugar2" type="text" name="fk_pais_sede_nome">
+            </div>
+            <div class="form-group">
+                <label for="lugar3">3º lugar</label>
+                <input id="lugar3" type="text" name="lugar3">
+            </div>
+            <div class="form-group">
+                <label for="lugar4">4º lugar</label>
+                <input id="lugar4" type="text" name="lugar4">
+            </div>
+            <button type="submit" class="btn-submit">Enviar</button>
+        </form>
+
+    </div>
+</div>
+
 <script>
-    function mostrarForm(formId) {
-        document.getElementById("jogadores").style.display = "none";
-        document.getElementById("selecao").style.display = "none";
-
-        document.getElementById(formId).style.display = "block";
-        // Block mostra o elemento escolhido.
+    function abrirModal(formId, titulo) {
+        document.querySelectorAll('.modal form').forEach(f => f.classList.remove('form-active'));
+        const form = document.getElementById(formId);
+        if (form) form.classList.add('form-active');
+        document.getElementById('modalTitle').textContent = titulo;
+        document.getElementById('modalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
+
+    function fecharModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function fecharModalOverlay(event) {
+        if (event.target === document.getElementById('modalOverlay')) fecharModal();
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(); });
 </script>
+
 </body>
 </html>
-
