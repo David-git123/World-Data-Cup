@@ -56,7 +56,7 @@ CREATE TABLE treinador(
 
 CREATE TABLE preparador_fisico(
 	fk_comissao_tecnica_inscricao INT PRIMARY KEY,
-	especializacao varchar(30),
+	especializacao varchar(50),
     metodologia_treino varchar(50),
 	FOREIGN KEY (fk_comissao_tecnica_inscricao) REFERENCES comissao_tecnica(inscricao) ON DELETE CASCADE);
     
@@ -95,7 +95,7 @@ CREATE TABLE jogador(
 CREATE TABLE posicao (
     NomePosicao VARCHAR(30),
     inscricao_jogador INT,
-    PRIMARY KEY (NomePosicao, inscricao_jogador),
+    CONSTRAINT pk_posicao PRIMARY KEY (NomePosicao, inscricao_jogador),
     FOREIGN KEY (inscricao_jogador) 
         REFERENCES jogador(inscricao) 
         ON DELETE CASCADE
