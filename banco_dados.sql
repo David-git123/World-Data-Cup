@@ -430,7 +430,7 @@ INSERT INTO jogo (id, placar, data, vencedor, perdedor, tipo_jogo) VALUES
 (29, '1x0', '2026-07-16 20:00:00', 'Italia', 'Suica', 'Semifinal'),
 (30, '3x2', '2026-07-19 18:00:00', 'Brasil', 'Italia', 'Final');
 
-INSERT INTO contido (fk_jogo_id, fk_selecao_inscricao) VALUES
+INSERT INTO contido (fk_jogo_id, fk_selecao_inscricao) VALUES  
 (1, 1), (1, 2),
 (2, 3), (2, 4),
 (3, 7), (3, 8),
