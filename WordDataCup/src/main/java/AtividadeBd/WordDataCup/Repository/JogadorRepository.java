@@ -38,9 +38,9 @@ public class JogadorRepository {
                 jogador.getPosicao(),
                 jogador.getNome(),
                 jogador.getIdade(),
-                jogador.getInscricao(),
                 jogador.getFkSelecaoInscricao(),
-                jogador.getCapitao()
+                jogador.getCapitao(),
+                jogador.getInscricao()
         );
 
         System.out.println("Atualização feita");

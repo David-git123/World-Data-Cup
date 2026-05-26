@@ -52,4 +52,36 @@ public class Selecao {
 	public int getRankingFifa() {
 		return ranking_da_fifa;
 	}
+
+	public void setInscricao(int inscricao) {
+		this.inscricao = inscricao;
+	}
+
+	public void setMedia_idade(int media_idade) {
+		this.media_idade = media_idade;
+	}
+
+	public void setMedia_gols(int media_gols) {
+		this.media_gols = media_gols;
+	}
+
+	public void setRanking_da_fifa(int ranking_da_fifa) {
+		this.ranking_da_fifa = ranking_da_fifa;
+	}
+
+	public void setContinente(String continente) {
+		this.continente = continente;
+	}
+
+	public void setFk_grupo_letra_identificacao(String fk_grupo_letra_identificacao) {
+		this.fk_grupo_letra_identificacao = fk_grupo_letra_identificacao;
+	}
+
+	public void setPontuacao(int pontuacao) {
+		this.pontuacao = pontuacao;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
 }

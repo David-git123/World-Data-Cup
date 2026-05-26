@@ -2,12 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Home</title>
 </head>
 <body>
 
 <button onclick="mostrarForm('selecao')">Seleção</button>
 <button onclick="mostrarForm('jogadores')">Jogadores</button>
+<button onclick="mostrarForm('treinador')">Treinador</button>
+<button onclick = "mostrarForm('preparador')">Preparador físico</button>
+<button onclick = "mostrarForm('pais')">País Sede</button>
+<button onclick = "mostrarForm('mascote')">Mascote</button>
+<button onclick = "mostrarForm('jogo')">Jogo</button>
+<button onclick = "mostrarForm('estadio')">Estadio</button>
+<button onclick = "mostrarForm('comissao')">Comissão técnica</button>
+<button onclick = "mostrarForm('auxiliar')">Auxiliar técnico</button>
+<button onclick = "mostrarForm('grupo')">Grupo</button>
+button onclick = "<mostrar></mostrar>
 
 <p th:text="${mensagem}"></p>
 
@@ -80,8 +90,185 @@
     <button type="submit">Enviar</button>
 </form>
 
+<form method = "post" id = "treinador" action = "/treinador" style="display:none;">
+    <label for="operacao2">Tipo de operação</label>
+    <select name="operacao" id = "operacao2">
+        <option value = "Inserir">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
+    </select>
+    <label for ="fk_comissao_tecnica_inscricao">Inscrição da comissão ténica (FK)</label>
+    <input id = "fk_comissao_tecnica_inscricao" type = "number" name="fk_comissao_tecnica_inscricao">
+    <br>
+    <label for ="estilo_jogo">Estilo de jogo</label>
+    <input id = "estilo_jogo" type = "text" name="estilo_jogo">
+    <br>
+    <label for ="estilo_jogo">Estilo de jogo</label>
+    <input id = "esquema_tatico_pref" type = "text" name="esquema_tatico_pref">
+    <br>
+    <label for ="metodologia_treino">Metodologia de treino</label>
+    <input id = "metodologia_treino" type = "text" name="metodologia_treino">
+</form>
 
+<form method = "post" id = "preparador" action = "/preparador" style="display:none;">
+    <label for="operacao3">Tipo de operação</label>
+    <select name="operacao" id = "operacao3">
+        <option value = "Inserir">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
+    </select>
+    <label for ="fk_comissao_tecnica_inscricao1">Inscrição da comissão ténica (FK)</label>
+    <input id = "fk_comissao_tecnica_inscricao1" type = "number" name="fk_comissao_tecnica_inscricao">
+    <br>
+    <label for ="especializacao">Estilo de jogo</label>
+    <input id = "especializacao" type = "text" name="especializacao">
+    <br>
+    <label for ="metodologia_treino1">Estilo de jogo</label>
+    <input id = "metodologia_treino1" type = "text" name="metodologia_treino">
+</form>
 
+<form method = "post" id = "pais" action = "/pais" style="display:none;">
+    <label for="operacao4">Tipo de operação</label>
+    <select name="operacao" id = "operacao4">
+        <option value = "Inserir">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
+    </select>
+    <label for ="nome_pais">Inscrição da comissão ténica (FK)</label>
+    <input id = "nome_pais" type = "text" name="nome_pais">
+    <br>
+    <label for ="numero_jogos_pais">Estilo de jogo</label>
+    <input id = "numero_jogos_pais" type = "number" name="numero_jogos_pais">
+    <br>
+</form>
+
+<form method = "post" id = "mascote" action = "/mascote" style="display:none;">
+    <label for="operacao5">Tipo de operação</label>
+    <select name="operacao" id = "operacao5">
+        <option value = "Inserir">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
+    </select>
+    <label for ="nome1">Inscrição da comissão ténica (FK)</label>
+    <input id = "nome1" type = "text" name="nome">
+    <br>
+    <label for ="id">Estilo de jogo</label>
+    <input id = "id" type = "number" name="id">
+    <br>
+    <label for ="fk_inscricao_selecao">Inscricao da Selecao(FK)</label>
+    <input id = "fk_inscricao_selecao" type = "number" name="fk_inscricao_selecao">
+</form>
+
+<form method = "post" id = "jogo" action = "/jogo" style="display:none;">
+    <label for="operacao6">Tipo de operação</label>
+    <select name="operacao" id = "operacao6">
+        <option value = "Inserir">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
+    </select>
+    <label for ="nome_pais1">Nome do pais</label>
+    <input id = "nome_pais1" type = "text" name="nome_pais">
+    <br>
+    <label for ="placar">Estilo de jogo</label>
+    <input id = "placar" type = "text" name="placar">
+    <br>
+    <label for ="data">Estilo de jogo</label>
+    <input id = "data" type = "datetime-local" name="data">
+    <br>
+    <label for ="vencedor">Estilo de jogo</label>
+    <input id = "vencedor" type = "text" name="vencedor">
+    <br>
+    <label for ="perdedor">Estilo de jogo</label>
+    <input id = "perdedor" type = "text" name="perdedor">
+    <br>
+    <label for ="tipo_jogo">Estilo de jogo</label>
+    <input id = "tipo_jogo" type = "text" name="tipo_jogo">
+</form>
+
+<form method = "post" id = "estadio" action = "/estadio" style="display:none;">
+    <label for="operacao7">Tipo de operação</label>
+    <select name="operacao" id = "operacao7">
+        <option value = "Inserir">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
+    </select>
+    <label for ="id1">Nome do pais</label>
+    <input id = "id1" type = "number" name="id">
+    <br>
+    <label for ="cidade">Estilo de jogo</label>
+    <input id = "cidade" type = "text" name="cidade">
+    <br>
+    <label for ="fk_pais_sede_nome">Estilo de jogo</label>
+    <input id = "fk_pais_sede_nome" type = "text" name="fk_pais_sede_nome">
+    <br>
+    <label for ="capacidade_maxima">Estilo de jogo</label>
+    <input id = "capacidade_maxima" type = "number" name="capacidade_maxima">
+    <br>
+    <label for ="nome4">Estilo de jogo</label>
+    <input id = "nome4" type = "text" name="nome">
+</form>
+
+<form method = "post" id = "comissao" action = "/comissao" style="display:none;">
+    <label for="operacao8">Tipo de operação</label>
+    <select name="operacao" id = "operacao8">
+        <option value = "Inserir">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
+    </select>
+    <label for ="nome3">Nome do pais</label>
+    <input id = "nome3" type = "text" name="nome3">
+    <br>
+    <label for ="nacionalidade">Estilo de jogo</label>
+    <input id = "nacionalidade" type = "text" name="nacionalidade">
+    <br>
+    <label for ="inscricao1">Estilo de jogo</label>
+    <input id = "inscricao1" type = "number" name="inscricao">
+    <br>
+    <label for ="fk_inscricao_selecao2">Estilo de jogo</label>
+    <input id = "fk_inscricao_selecao2" type = "number" name="fk_inscricao_selecao2">
+    <br>
+    <label for ="nome5">Estilo de jogo</label>
+    <input id = "nome5" type = "text" name="nome">
+</form>
+
+<form method = "post" id = "auxiliar" action = "/auxiliar" style="display:none;">
+    <label for="operacao9">Tipo de operação</label>
+    <select name="operacao" id = "operacao9">
+        <option value = "Inserir">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
+    </select>
+    <label for ="fk_comissao_tecnica_inscricao2">Nome do pais</label>
+    <input id = "fk_comissao_tecnica_inscricao2" type = "number" name="fk_comissao_tenica_inscricao">
+    <br>
+    <label for ="especialidade">Estilo de jogo</label>
+    <input id = "especialidade" type = "text" name="especialidade">
+    <br>
+    <label for ="foco_setorial">Estilo de jogo</label>
+    <input id = "foco_setorial" type = "text" name="foco_setorial">
+</form>
+<form method = "post" id = "grupo" action = "/grupo" style="display:none;">
+    <label for="operacao10">Tipo de operação</label>
+    <select name="operacao" id = "operacao10">
+        <option value = "Inserir">Inserir</option>
+        <option value = "Deletar">Deletar</option>
+        <option value = "Alterar">Alterar</option>
+    </select>
+    <label for ="letra_identificadora">Nome do pais</label>
+    <input id = "letra_identificadora" type = "text" name="letra_identificadora">
+    <br>
+    <label for ="lugar1">Estilo de jogo</label>
+    <input id = "lugar1" type = "text" name="lugar1">
+    <br>
+    <label for ="lugar2">Estilo de jogo</label>
+    <input id = "lugar2" type = "text" name="fk_pais_sede_nome">
+    <br>
+    <label for ="lugar3">Estilo de jogo</label>
+    <input id = "lugar3" type = "text" name="lugar3">
+    <br>
+    <label for ="lugar4">Estilo de jogo</label>
+    <input id = "lugar4" type = "text" name="lugar4">
+</form>
 <script>
     function mostrarForm(formId) {
         document.getElementById("jogadores").style.display = "none";

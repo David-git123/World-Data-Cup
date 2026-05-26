@@ -49,5 +49,33 @@ public class Jogador {
 	public int getCapitao() {
 		return capitao;
 	}
+
+	public void setNumero_da_camisa(int numero_da_camisa) {
+		this.numero_da_camisa = numero_da_camisa;
+	}
+
+	public void setInscricao(int inscricao) {
+		this.inscricao = inscricao;
+	}
+
+	public void setPosicao(String posicao) {
+		this.posicao = posicao;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public void setIdade(int idade) {
+		this.idade = idade;
+	}
+
+	public void setFk_selecao_inscricao(int fk_selecao_inscricao) {
+		this.fk_selecao_inscricao = fk_selecao_inscricao;
+	}
+
+	public void setCapitao(int capitao) {
+		this.capitao = capitao;
+	}
 }
 
