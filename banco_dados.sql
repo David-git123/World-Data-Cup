@@ -237,6 +237,7 @@ INSERT INTO selecao (inscricao, ranking_da_fifa, media_idade, media_gols, contin
 (28, 28, 27, 1, 'Europa', 'J', 4, 'Polonia'),
 (29, 29, 26, 1, 'America do Sul', 'K', 2, 'Peru'),
 (30, 30, 28, 1, 'Europa', 'K', 3, 'Ucrnia');
+(31, 35, 27, 0, 'Africa', 'A', 0, 'Tunisia');
 
 INSERT INTO mascote (id, nome, fk_selecao_inscricao) VALUES
 (1, 'Canarinho', 1),
