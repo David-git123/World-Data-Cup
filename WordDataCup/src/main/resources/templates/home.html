@@ -1,157 +1,1799 @@
-package AtividadeBd.WordDataCup.Controller;
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Data Cup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #02B906;
+            --green-d: #019504;
+            --green-l: #E8FAE8;
+            --gold: #FFDB00;
+            --gold-d: #C9AB00;
+            --gold-l: #FFFBE0;
+            --red: #E61D25;
+            --blue: #2A398D;
+            --white: #FFFFFF;
+            --ink: #0F1A0F;
+            --ink2: #2E402E;
+            --muted: #6B7B6B;
+            --surface: #F2FAF2;
+            --card: #FFFFFF;
+            --border: #D6EDD6;
+        }
 
-import AtividadeBd.WordDataCup.Model.*;
-import AtividadeBd.WordDataCup.Repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
 
-import java.time.LocalDateTime;
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--surface);
+            color: var(--ink);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-@Controller
-public class Controlador {
+        /* ─── HEADER ─── */
+        header {
+            background: var(--green);
+            position: relative;
+            overflow: hidden;
+            padding: 3rem 4rem 2.75rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: end;
+            gap: 2rem;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: repeating-linear-gradient(
+                    -55deg, transparent, transparent 18px,
+                    rgba(0,0,0,.045) 18px, rgba(0,0,0,.045) 36px
+            );
+            pointer-events: none;
+        }
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 5px;
+            background: var(--gold);
+        }
+        .header-bg-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20rem;
+            color: #fff;
+            opacity: .07;
+            position: absolute;
+            right: -1rem; bottom: -3rem;
+            line-height: 1;
+            pointer-events: none;
+            user-select: none;
+            letter-spacing: -.02em;
+        }
+        .header-eyebrow {
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: .6rem;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            position: relative;
+        }
+        .header-eyebrow::before {
+            content: '';
+            display: block;
+            width: 22px; height: 2px;
+            background: var(--gold);
+        }
+        header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 6rem;
+            line-height: .88;
+            letter-spacing: .015em;
+            color: #fff;
+            position: relative;
+        }
+        header h1 em { color: var(--gold); font-style: normal; }
+        .header-sub {
+            margin-top: .9rem;
+            font-size: .85rem;
+            color: rgba(255,255,255,.75);
+            font-weight: 300;
+            max-width: 380px;
+            line-height: 1.55;
+            position: relative;
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(255,255,255,.15);
+            border: 1px solid rgba(255,255,255,.3);
+            color: #fff;
+            padding: .45rem 1rem;
+            border-radius: 99px;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            position: relative;
+        }
+        .status-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--gold);
+            animation: blink 2.2s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
 
-    @Autowired JogadorRepository jogadorRepository;
-    @Autowired SelecaoRepository selecaoRepository;
-    @Autowired ComissaoTecnicaRepository comissaoTecnicaRepository;
-    @Autowired TreinadorRepository treinadorRepository;
-    @Autowired PreparadorFisicoRepository preparadorFisicoRepository;
-    @Autowired AuxiliarTecnicoRepository auxiliarTecnicoRepository;
-    @Autowired GrupoRepository grupoRepository;
-    @Autowired PaisSedeRepository paisSedeRepository;
-    @Autowired EstadioRepository estadioRepository;
-    @Autowired MascoteRepository mascoteRepository;
-    @Autowired JogoRepository jogoRepository;
+        /* ─── ALERT ─── */
+        .alert {
+            margin: 2rem 4rem 0;
+            background: var(--gold-l);
+            border: 1.5px solid var(--gold);
+            color: #7a5800;
+            padding: .85rem 1.25rem;
+            border-radius: 8px;
+            font-size: .87rem;
+            font-weight: 500;
+        }
 
-    @GetMapping("/")
-    public String retornarPagina(Model model) {
-        model.addAttribute("grupos",              grupoRepository.listarGrupos());
-        model.addAttribute("paisesSede",          paisSedeRepository.listarPaisesSede());
-        model.addAttribute("jogos",               jogoRepository.listarJogos());
-        model.addAttribute("selecoes",            selecaoRepository.listarSelecoes());
-        model.addAttribute("estadios",            estadioRepository.listarEstadios());
-        model.addAttribute("jogadores",           jogadorRepository.listarJogadores());
-        model.addAttribute("comissoesTecnicas",   comissaoTecnicaRepository.listarComissoesTecnicas());
-        model.addAttribute("mascotes",            mascoteRepository.listarMascotes());
-        model.addAttribute("treinadores",         treinadorRepository.listarTreinadores());
-        model.addAttribute("preparadoresFisicos", preparadorFisicoRepository.listarPreparadoresFisicos());
-        model.addAttribute("auxiliaresTecnicos",  auxiliarTecnicoRepository.listarAuxiliaresTecnicos());
-        return "home";
+        /* ─── MAIN ─── */
+        main { padding: 3rem 4rem 6rem; }
+
+        /* ─── TIER ─── */
+        .tier { margin-bottom: 3rem; }
+        .tier-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+        .tier-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: .95rem;
+            color: var(--green);
+            letter-spacing: .1em;
+            flex-shrink: 0;
+        }
+        .tier-title {
+            font-size: .72rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .14em;
+            flex-shrink: 0;
+        }
+        .tier-rule { flex: 1; height: 1.5px; background: var(--border); }
+
+        /* ─── CARDS ─── */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
+            gap: 1px;
+            background: var(--border);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 16px rgba(2,185,6,.07);
+        }
+        .card {
+            background: var(--card);
+            padding: 1.5rem 1.4rem 1.35rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: background .18s;
+        }
+        .card-accent {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--gold);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .3s cubic-bezier(.4,0,.2,1);
+        }
+        .card:hover { background: var(--green-l); }
+        .card:hover .card-accent { transform: scaleX(1); }
+        .card:hover .card-icon svg { stroke: var(--green); }
+        .card-icon {
+            width: 38px; height: 38px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: background .18s, border-color .18s;
+        }
+        .card:hover .card-icon {
+            background: rgba(2,185,6,.1);
+            border-color: rgba(2,185,6,.25);
+        }
+        .card-icon svg {
+            width: 18px; height: 18px;
+            stroke: var(--muted);
+            fill: none;
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke .25s;
+        }
+        .card-title {
+            font-size: .93rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: .3rem;
+            letter-spacing: -.01em;
+        }
+        .card-desc {
+            font-size: .74rem;
+            color: var(--muted);
+            line-height: 1.5;
+            font-weight: 400;
+            flex: 1;
+            margin-bottom: 1.2rem;
+        }
+        .fk-tag {
+            display: inline-block;
+            background: var(--gold-l);
+            border: 1px solid #e8c800;
+            color: #7a5800;
+            border-radius: 3px;
+            padding: .04rem .28rem;
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            vertical-align: middle;
+            margin-left: .28rem;
+        }
+        .btn-add {
+            width: 100%;
+            background: transparent;
+            color: var(--ink2);
+            border: 1.5px solid var(--border);
+            padding: .58rem .85rem;
+            border-radius: 7px;
+            font-size: .78rem;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: border-color .18s, color .18s, background .18s;
+            letter-spacing: .03em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .btn-add svg {
+            width: 14px; height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            opacity: .5;
+            transition: opacity .18s, transform .2s;
+        }
+        .btn-add:hover { border-color: var(--green); color: var(--green-d); background: var(--green-l); }
+        .btn-add:hover svg { opacity: 1; transform: translateX(3px); }
+
+        /* ─── MODAL ─── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,26,15,.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s;
+            padding: 1.5rem;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 460px;
+            max-height: 88vh;
+            overflow-y: auto;
+            transform: translateY(18px) scale(.97);
+            transition: transform .28s cubic-bezier(.4,0,.2,1);
+            box-shadow: 0 32px 80px rgba(2,185,6,.12), 0 4px 16px rgba(0,0,0,.1);
+        }
+        .modal-overlay.active .modal { transform: none; }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1.5rem 1.75rem 1.25rem;
+            border-bottom: 2px solid var(--border);
+            position: sticky; top: 0;
+            background: #fff;
+            z-index: 1;
+        }
+        .modal-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--green) 0%, var(--gold) 50%, var(--red) 100%);
+            border-radius: 14px 14px 0 0;
+        }
+        .modal-eyebrow {
+            font-size: .63rem;
+            font-weight: 700;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--green);
+            margin-bottom: .2rem;
+        }
+        .modal-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            line-height: 1;
+            color: var(--ink);
+            letter-spacing: .03em;
+        }
+        .modal-close {
+            background: none;
+            border: 1.5px solid var(--border);
+            color: var(--muted);
+            width: 30px; height: 30px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: .8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color .15s, border-color .15s, background .15s;
+            flex-shrink: 0;
+            margin-top: .2rem;
+        }
+        .modal-close:hover { color: var(--red); border-color: var(--red); background: #fff0f0; }
+        .modal form {
+            display: none;
+            flex-direction: column;
+            gap: .9rem;
+            padding: 1.5rem 1.75rem 1.75rem;
+        }
+        .modal form.form-active { display: flex; }
+        .form-group { display: flex; flex-direction: column; gap: .38rem; }
+        .form-group label {
+            font-size: .7rem;
+            font-weight: 700;
+            color: var(--ink2);
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
+        .form-group input,
+        .form-group select {
+            padding: .68rem .9rem;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: .88rem;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--ink);
+            width: 100%;
+            transition: border-color .18s, box-shadow .18s;
+            -webkit-appearance: none;
+        }
+        .form-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236B7B6B'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right .9rem center;
+            padding-right: 2.4rem;
+            cursor: pointer;
+        }
+        .form-group select option { background: #fff; color: var(--ink); }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(2,185,6,.12);
+            background: #fff;
+        }
+        .form-group input::placeholder { color: #b0bdb0; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+        .btn-submit {
+            background: var(--green);
+            color: #fff;
+            border: none;
+            padding: .82rem 1.2rem;
+            border-radius: 9px;
+            font-size: .85rem;
+            font-weight: 700;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            margin-top: .2rem;
+            transition: background .18s, transform .1s, box-shadow .18s;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 14px rgba(2,185,6,.3);
+        }
+        .btn-submit:hover { background: var(--green-d); box-shadow: 0 6px 20px rgba(2,185,6,.4); }
+        .btn-submit:active { transform: scale(.98); }
+        .modal::-webkit-scrollbar { width: 4px; }
+        .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+
+        /* ════════════════════════════════════════
+        ─── SEÇÃO DE CONSULTA ───
+        ════════════════════════════════════════ */
+        .consulta-section { margin-top: 1rem; margin-bottom: 4rem; }
+
+        .tab-bar { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1.5rem; }
+        .tab-btn { background: var(--card); border: 1.5px solid var(--border); color: var(--muted); padding: .48rem 1rem; border-radius: 8px; font-size: .72rem; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; letter-spacing: .07em; text-transform: uppercase; transition: all .18s; display: flex; align-items: center; gap: .4rem; }
+        .tab-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+        .tab-btn:hover { border-color: var(--green); color: var(--green-d); background: var(--green-l); }
+        .tab-btn.active { background: var(--green); border-color: var(--green); color: #fff; box-shadow: 0 4px 14px rgba(2,185,6,.28); }
+
+        .tab-panel { display: none; }
+        .tab-panel.panel-active { display: block; }
+
+        .table-wrap { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(2,185,6,.06); }
+        .table-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem .85rem; border-bottom: 1.5px solid var(--border); gap: 1rem; flex-wrap: wrap; }
+        .table-toolbar-left { display: flex; align-items: center; gap: .75rem; }
+        .table-entity-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+        .table-entity-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: .04em; color: var(--ink); line-height: 1; }
+        .table-count-badge { background: var(--green-l); border: 1px solid rgba(2,185,6,.25); color: var(--green-d); border-radius: 99px; padding: .15rem .65rem; font-size: .67rem; font-weight: 700; letter-spacing: .06em; }
+        .btn-refresh { background: transparent; border: 1.5px solid var(--border); color: var(--muted); padding: .42rem .85rem; border-radius: 7px; font-size: .72rem; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; letter-spacing: .05em; display: flex; align-items: center; gap: .4rem; transition: all .18s; }
+        .btn-refresh svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .4s; }
+        .btn-refresh:hover { border-color: var(--green); color: var(--green-d); background: var(--green-l); }
+        .btn-refresh.loading svg { animation: spin .7s linear infinite; }
+
+        .table-scroll { overflow-x: auto; }
+        .table-scroll::-webkit-scrollbar { height: 4px; }
+        .table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+        .data-table thead tr { background: var(--surface); border-bottom: 2px solid var(--border); }
+        .data-table thead th { padding: .7rem 1.1rem; text-align: left; font-size: .64rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+        .data-table tbody tr { border-bottom: 1px solid var(--border); transition: background .14s; }
+        .data-table tbody tr:last-child { border-bottom: none; }
+        .data-table tbody tr:hover { background: var(--green-l); }
+        .data-table td { padding: .75rem 1.1rem; color: var(--ink2); white-space: nowrap; }
+        .td-pk { font-weight: 700; color: var(--ink); font-size: .82rem; }
+        .td-badge { display: inline-flex; align-items: center; background: var(--gold-l); border: 1px solid #e4c400; color: #7a5800; border-radius: 4px; padding: .1rem .5rem; font-size: .67rem; font-weight: 700; letter-spacing: .04em; }
+        .td-green { display: inline-flex; align-items: center; background: var(--green-l); border: 1px solid rgba(2,185,6,.3); color: var(--green-d); border-radius: 4px; padding: .1rem .5rem; font-size: .67rem; font-weight: 700; }
+
+        .table-state { padding: 3.5rem 2rem; text-align: center; }
+        .table-state-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--surface); border: 1.5px solid var(--border); display: inline-flex; align-items: center; justify-content: center; margin-bottom: .9rem; }
+        .table-state-icon svg { width: 20px; height: 20px; stroke: var(--muted); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+        .table-state p { font-size: .8rem; color: var(--muted); font-weight: 500; }
+        .table-state.loading .table-state-icon svg { animation: spin .8s linear infinite; }
+        .table-state.error .table-state-icon { background: #fff0f0; border-color: #fcc; }
+        .table-state.error .table-state-icon svg { stroke: var(--red); }
+        .table-state.error p { color: var(--red); }
+
+        .table-footer { padding: .65rem 1.25rem; border-top: 1.5px solid var(--border); background: var(--surface); font-size: .68rem; color: var(--muted); font-weight: 500; letter-spacing: .03em; }
+
+        /* ════════════════════════════════════════
+        ─── DASHBOARD (seção 06) ───
+        ════════════════════════════════════════ */
+        .dash-section { margin-bottom: 2.5rem; }
+        .section-head { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.4rem; }
+        .section-num-d { font-family: 'Bebas Neue', sans-serif; font-size: .92rem; color: var(--green); letter-spacing: .1em; flex-shrink: 0; }
+        .section-label { font-size: .7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .14em; flex-shrink: 0; }
+        .section-tag { font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: .18rem .6rem; border-radius: 4px; flex-shrink: 0; }
+        .tag-fn { background: #EEF1FB; color: #2A398D; border: 1px solid #c0c9f0; }
+        .tag-proc { background: var(--gold-l); color: #7a5800; border: 1px solid #e8c800; }
+        .tag-trig { background: #FFF0F0; color: var(--red); border: 1px solid #f5c0c2; }
+        .tag-view { background: var(--green-l); color: var(--green-d); border: 1px solid rgba(2,185,6,.3); }
+        .tag-sql { background: #f0f0f0; color: #444; border: 1px solid #ddd; }
+
+        .dash-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        .dash-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 14px rgba(2,185,6,.05); }
+        .dash-card-header { padding: 1.1rem 1.4rem .9rem; border-bottom: 1.5px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+        .dash-card-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: .03em; color: var(--ink); line-height: 1; margin-bottom: .2rem; }
+        .dash-card-desc { font-size: .72rem; color: var(--muted); line-height: 1.5; }
+        .dash-card-body { padding: 1.25rem 1.4rem; }
+
+        .exec-form { display: flex; flex-wrap: wrap; gap: .65rem; align-items: flex-end; }
+        .exec-group { display: flex; flex-direction: column; gap: .28rem; }
+        .exec-group label { font-size: .62rem; font-weight: 700; color: var(--ink2); text-transform: uppercase; letter-spacing: .08em; }
+        .exec-group input,
+        .exec-group select { padding: .58rem .8rem; background: var(--surface); border: 1.5px solid var(--border); border-radius: 7px; font-size: .84rem; font-family: 'DM Sans', sans-serif; color: var(--ink); min-width: 130px; transition: border-color .18s, box-shadow .18s; -webkit-appearance: none; }
+        .exec-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236B7B6B'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem; cursor: pointer; }
+        .exec-group input:focus, .exec-group select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(2,185,6,.12); background: #fff; }
+
+        .btn-exec { padding: .58rem 1.2rem; border: none; border-radius: 7px; font-size: .75rem; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; letter-spacing: .06em; text-transform: uppercase; transition: all .18s; display: inline-flex; align-items: center; gap: .4rem; }
+        .btn-exec svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        .btn-exec.e-green { background: var(--green); color: #fff; box-shadow: 0 3px 12px rgba(2,185,6,.28); }
+        .btn-exec.e-green:hover { background: var(--green-d); }
+        .btn-exec.e-gold { background: var(--gold); color: var(--ink); box-shadow: 0 3px 12px rgba(255,219,0,.3); }
+        .btn-exec.e-gold:hover { background: var(--gold-d); }
+        .btn-exec.e-red { background: var(--red); color: #fff; box-shadow: 0 3px 12px rgba(230,29,37,.22); }
+        .btn-exec.e-red:hover { background: #c4191f; }
+        .btn-exec.e-blue { background: #2A398D; color: #fff; box-shadow: 0 3px 12px rgba(42,57,141,.22); }
+        .btn-exec.e-blue:hover { background: #1e2c7a; }
+        .btn-exec:active { transform: scale(.97); }
+        .btn-exec.loading svg { animation: spin .7s linear infinite; }
+
+        .res-box { margin-top: 1rem; border-radius: 9px; border: 1.5px solid var(--border); display: none; overflow: hidden; }
+        .res-box.visible { display: block; }
+        .res-box-head { padding: .5rem .9rem; display: flex; align-items: center; gap: .45rem; font-size: .66rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+        .res-box-head svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; flex-shrink: 0; }
+        .res-box.s-ok .res-box-head { background: var(--green-l); color: var(--green-d); border-bottom: 1px solid rgba(2,185,6,.2); }
+        .res-box.s-err .res-box-head { background: #fff0f0; color: var(--red); border-bottom: 1px solid rgba(230,29,37,.2); }
+        .res-box.s-info .res-box-head { background: #EEF1FB; color: #2A398D; border-bottom: 1px solid rgba(42,57,141,.2); }
+        .res-box-body { padding: .8rem .9rem; font-size: .78rem; color: var(--ink2); line-height: 1.6; }
+
+        .dash-inner-table { margin-top: 1rem; border: 1.5px solid var(--border); border-radius: 9px; overflow: hidden; }
+        .dash-inner-table.hidden { display: none; }
+        .dash-inner-scroll { overflow-x: auto; }
+        .dash-data-table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+        .dash-data-table thead tr { background: var(--surface); border-bottom: 2px solid var(--border); }
+        .dash-data-table thead th { padding: .6rem .9rem; text-align: left; font-size: .61rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+        .dash-data-table tbody tr { border-bottom: 1px solid var(--border); transition: background .14s; }
+        .dash-data-table tbody tr:last-child { border-bottom: none; }
+        .dash-data-table tbody tr:hover { background: var(--green-l); }
+        .dash-data-table td { padding: .65rem .9rem; color: var(--ink2); white-space: nowrap; }
+        .d-pk { font-weight: 700; color: var(--ink); }
+        .d-badge { display: inline-flex; background: var(--gold-l); border: 1px solid #e4c400; color: #7a5800; border-radius: 4px; padding: .1rem .45rem; font-size: .65rem; font-weight: 700; }
+        .d-green { display: inline-flex; background: var(--green-l); border: 1px solid rgba(2,185,6,.3); color: var(--green-d); border-radius: 4px; padding: .1rem .45rem; font-size: .65rem; font-weight: 700; }
+        .d-blue { display: inline-flex; background: #EEF1FB; border: 1px solid rgba(42,57,141,.25); color: #2A398D; border-radius: 4px; padding: .1rem .45rem; font-size: .65rem; font-weight: 700; }
+        .d-red { display: inline-flex; background: #fff0f0; border: 1px solid rgba(230,29,37,.25); color: var(--red); border-radius: 4px; padding: .1rem .45rem; font-size: .65rem; font-weight: 700; }
+        .dash-table-footer { padding: .5rem .9rem; background: var(--surface); border-top: 1.5px solid var(--border); font-size: .66rem; color: var(--muted); }
+
+        .d-state { padding: 2rem; text-align: center; }
+        .d-state-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--surface); border: 1.5px solid var(--border); display: inline-flex; align-items: center; justify-content: center; margin-bottom: .6rem; }
+        .d-state-icon svg { width: 16px; height: 16px; stroke: var(--muted); fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+        .d-state-icon.spin svg { animation: spin .8s linear infinite; }
+        .d-state-icon.err { background: #fff0f0; border-color: #fcc; }
+        .d-state-icon.err svg { stroke: var(--red); }
+        .d-state p { font-size: .76rem; color: var(--muted); }
+
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .9rem; margin-bottom: 1.4rem; }
+        .kpi-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 11px; padding: 1rem 1.15rem; position: relative; overflow: hidden; }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .kpi-card.kc-green::before { background: var(--green); }
+        .kpi-card.kc-gold::before { background: var(--gold); }
+        .kpi-card.kc-blue::before { background: #2A398D; }
+        .kpi-card.kc-red::before { background: var(--red); }
+        .kpi-label { font-size: .6rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: .35rem; }
+        .kpi-value { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; line-height: 1; color: var(--ink); }
+        .kpi-sub { font-size: .66rem; color: var(--muted); margin-top: .25rem; }
+
+        .trig-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .trig-panel { background: var(--surface); border: 1.5px solid var(--border); border-radius: 9px; padding: .9rem 1.1rem; }
+        .trig-panel-title { font-size: .65rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .65rem; display: flex; align-items: center; gap: .4rem; }
+        .trig-panel-title svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; flex-shrink: 0; }
+        .log-feed { display: flex; flex-direction: column; gap: .4rem; max-height: 260px; overflow-y: auto; }
+        .log-feed::-webkit-scrollbar { width: 3px; }
+        .log-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .log-item { display: flex; align-items: flex-start; gap: .6rem; padding: .6rem .8rem; background: var(--card); border: 1.5px solid var(--border); border-radius: 7px; font-size: .75rem; }
+        .log-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: .28rem; }
+        .log-dot.lg { background: var(--green); }
+        .log-dot.lr { background: var(--red); }
+        .log-dot.ly { background: var(--gold-d); }
+        .log-meta { flex: 1; }
+        .log-action { font-weight: 700; color: var(--ink); }
+        .log-detail { color: var(--muted); margin-top: .08rem; font-size: .7rem; }
+        .log-time { font-size: .63rem; color: var(--muted); white-space: nowrap; }
+
+        .chart-container { position: relative; margin-top: 1.1rem; }
+        .chart-container canvas { width: 100% !important; max-height: 210px; }
+
+        @media (max-width: 768px) {
+            header { padding: 2rem 1.5rem 1.75rem; grid-template-columns: 1fr; }
+            header h1 { font-size: 4rem; }
+            .header-bg-text { font-size: 10rem; right: -1rem; bottom: -1rem; }
+            main { padding: 2rem 1.5rem 4rem; }
+            .alert { margin: 1.5rem 1.5rem 0; }
+            .form-row { grid-template-columns: 1fr; }
+            .tab-btn span { display: none; }
+            .dash-grid-2 { grid-template-columns: 1fr; }
+            .trig-cols { grid-template-columns: 1fr; }
+            .kpi-row { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header>
+    <div>
+        <div class="header-eyebrow">Sistema de Gerenciamento</div>
+        <h1>World <em>Data</em><br>Cup</h1>
+        <p class="header-sub">Banco de dados do Mundial de Clubes FIFA 2026 — gestão de seleções, jogadores e partidas em tempo real.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:.75rem; position:relative;">
+        <div class="status-pill">
+            <span class="status-dot"></span>
+            Sistema ativo
+        </div>
+    </div>
+    <div class="header-bg-text" aria-hidden="true">26</div>
+</header>
+
+<div th:if="${mensagem}" class="alert" th:text="${mensagem}"></div>
+
+<main>
+
+    <!-- ══════ GERENCIAR ══════ -->
+
+    <div class="tier">
+        <div class="tier-header">
+            <span class="tier-num">01 —</span>
+            <span class="tier-title">Tabelas Independentes</span>
+            <div class="tier-rule"></div>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+                <div class="card-title">Grupo</div>
+                <div class="card-desc">Grupos da fase classificatória do torneio</div>
+                <button class="btn-add" onclick="abrirModal('grupo','Grupo')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg></div>
+                <div class="card-title">País Sede</div>
+                <div class="card-desc">Países anfitriões do Mundial 2026</div>
+                <button class="btn-add" onclick="abrirModal('pais','País Sede')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c0 0-4 3.5-4 9s4 9 4 9"/><path d="M3.6 9h16.8M3.6 15h16.8"/></svg></div>
+                <div class="card-title">Jogo</div>
+                <div class="card-desc">Partidas e resultados do torneio</div>
+                <button class="btn-add" onclick="abrirModal('jogo','Jogo')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tier">
+        <div class="tier-header">
+            <span class="tier-num">02 —</span>
+            <span class="tier-title">Dependem de Grupo / País Sede</span>
+            <div class="tier-rule"></div>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z"/><path d="M17 14v6M14 17h6"/></svg></div>
+                <div class="card-title">Seleção</div>
+                <div class="card-desc">Clubes participantes<span class="fk-tag">FK Grupo</span></div>
+                <button class="btn-add" onclick="abrirModal('selecao','Seleção')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M2 20h20v-8l-4-4H2v12z"/><path d="M6 20v-4M14 20v-4"/><rect x="10" y="4" width="4" height="8"/><path d="M6 12V7a1 1 0 0 1 1-1h2"/></svg></div>
+                <div class="card-title">Estádio</div>
+                <div class="card-desc">Arenas do torneio<span class="fk-tag">FK País Sede</span></div>
+                <button class="btn-add" onclick="abrirModal('estadio','Estádio')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tier">
+        <div class="tier-header">
+            <span class="tier-num">03 —</span>
+            <span class="tier-title">Dependem de Seleção</span>
+            <div class="tier-rule"></div>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+                <div class="card-title">Jogador</div>
+                <div class="card-desc">Atletas cadastrados por seleção<span class="fk-tag">FK Seleção</span></div>
+                <button class="btn-add" onclick="abrirModal('jogadores','Jogador')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                <div class="card-title">Comissão Técnica</div>
+                <div class="card-desc">Corpo técnico das seleções<span class="fk-tag">FK Seleção</span></div>
+                <button class="btn-add" onclick="abrirModal('comissao','Comissão Técnica')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+                <div class="card-title">Mascote</div>
+                <div class="card-desc">Mascote oficial de cada seleção<span class="fk-tag">FK Seleção</span></div>
+                <button class="btn-add" onclick="abrirModal('mascote','Mascote')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tier">
+        <div class="tier-header">
+            <span class="tier-num">04 —</span>
+            <span class="tier-title">Dependem de Comissão Técnica</span>
+            <div class="tier-rule"></div>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+                <div class="card-title">Treinador</div>
+                <div class="card-desc">Treinadores das seleções<span class="fk-tag">FK Comissão</span></div>
+                <button class="btn-add" onclick="abrirModal('treinador','Treinador')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+                <div class="card-title">Preparador Físico</div>
+                <div class="card-desc">Preparadores de cada equipe<span class="fk-tag">FK Comissão</span></div>
+                <button class="btn-add" onclick="abrirModal('preparador','Preparador Físico')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+            <div class="card">
+                <div class="card-accent"></div>
+                <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></div>
+                <div class="card-title">Auxiliar Técnico</div>
+                <div class="card-desc">Auxiliares de cada comissão<span class="fk-tag">FK Comissão</span></div>
+                <button class="btn-add" onclick="abrirModal('auxiliar','Auxiliar Técnico')">Gerenciar<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ══════ CONSULTAR DADOS ══════ -->
+    <div class="tier consulta-section">
+        <div class="tier-header">
+            <span class="tier-num">05 —</span>
+            <span class="tier-title">Consultar Dados</span>
+            <div class="tier-rule"></div>
+        </div>
+
+        <!-- abas -->
+        <div class="tab-bar" id="tabBar">
+            <button class="tab-btn active" onclick="trocarAba('jogadores-tab', this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Jogadores</span></button>
+            <button class="tab-btn" onclick="trocarAba('selecoes-tab', this)"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z"/><path d="M17 14v6M14 17h6"/></svg><span>Seleções</span></button>
+            <button class="tab-btn" onclick="trocarAba('grupos-tab', this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Grupos</span></button>
+            <button class="tab-btn" onclick="trocarAba('jogos-tab', this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c0 0-4 3.5-4 9s4 9 4 9"/><path d="M3.6 9h16.8M3.6 15h16.8"/></svg><span>Jogos</span></button>
+            <button class="tab-btn" onclick="trocarAba('estadios-tab', this)"><svg viewBox="0 0 24 24"><path d="M2 20h20v-8l-4-4H2v12z"/><path d="M6 20v-4M14 20v-4"/><rect x="10" y="4" width="4" height="8"/></svg><span>Estádios</span></button>
+            <button class="tab-btn" onclick="trocarAba('paises-tab', this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg><span>Países Sede</span></button>
+            <button class="tab-btn" onclick="trocarAba('mascotes-tab', this)"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>Mascotes</span></button>
+            <button class="tab-btn" onclick="trocarAba('comissoes-tab', this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Comissões</span></button>
+            <button class="tab-btn" onclick="trocarAba('treinadores-tab', this)"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg><span>Treinadores</span></button>
+            <button class="tab-btn" onclick="trocarAba('preparadores-tab', this)"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Preparadores</span></button>
+            <button class="tab-btn" onclick="trocarAba('auxiliares-tab', this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg><span>Auxiliares</span></button>
+        </div>
+
+        <!-- JOGADORES -->
+        <div class="tab-panel panel-active" id="jogadores-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Jogadores</span><span class="table-count-badge" id="count-jogadores">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('jogadores-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>Inscrição</th><th>Nome</th><th>Nº Camisa</th><th>Posição</th><th>Idade</th><th>Seleção FK</th><th>Capitão FK</th></tr></thead><tbody id="tbody-jogadores"><tr><td colspan="7"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-jogadores">Aguardando dados</div>
+            </div>
+        </div>
+
+        <!-- SELEÇÕES -->
+        <div class="tab-panel" id="selecoes-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Seleções</span><span class="table-count-badge" id="count-selecoes">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('selecoes-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>Inscrição</th><th>Nome</th><th>Continente</th><th>Ranking FIFA</th><th>Pontuação</th><th>Média Idade</th><th>Média Gols</th><th>Grupo FK</th></tr></thead><tbody id="tbody-selecoes"><tr><td colspan="8"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-selecoes">Aguardando dados</div>
+            </div>
+        </div>
+
+        <!-- GRUPOS -->
+        <div class="tab-panel" id="grupos-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Grupos</span><span class="table-count-badge" id="count-grupos">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('grupos-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>Grupo</th><th>1º Lugar</th><th>2º Lugar</th><th>3º Lugar</th><th>4º Lugar</th></tr></thead><tbody id="tbody-grupos"><tr><td colspan="5"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-grupos">Aguardando dados</div>
+            </div>
+        </div>
+
+        <!-- JOGOS -->
+        <div class="tab-panel" id="jogos-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Jogos</span><span class="table-count-badge" id="count-jogos">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('jogos-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>ID</th><th>Placar</th><th>Data</th><th>Vencedor</th><th>Perdedor</th><th>Tipo</th></tr></thead><tbody id="tbody-jogos"><tr><td colspan="6"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-jogos">Aguardando dados</div>
+            </div>
+        </div>
+
+        <!-- ESTÁDIOS -->
+        <div class="tab-panel" id="estadios-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Estádios</span><span class="table-count-badge" id="count-estadios">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('estadios-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>ID</th><th>Nome</th><th>Cidade</th><th>Capacidade</th><th>País Sede FK</th></tr></thead><tbody id="tbody-estadios"><tr><td colspan="5"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-estadios">Aguardando dados</div>
+            </div>
+        </div>
+
+        <!-- PAÍSES SEDE -->
+        <div class="tab-panel" id="paises-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Países Sede</span><span class="table-count-badge" id="count-paises">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('paises-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>País</th><th>Jogos Sediados</th><th>Nº Estádios</th><th>Mascote</th></tr></thead><tbody id="tbody-paises"><tr><td colspan="4"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-paises">Aguardando dados</div>
+            </div>
+        </div>
+
+        <!-- MASCOTES -->
+        <div class="tab-panel" id="mascotes-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Mascotes</span><span class="table-count-badge" id="count-mascotes">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('mascotes-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>ID</th><th>Nome</th><th>Seleção FK</th></tr></thead><tbody id="tbody-mascotes"><tr><td colspan="3"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-mascotes">Aguardando dados</div>
+            </div>
+        </div>
+
+        <!-- COMISSÕES -->
+        <div class="tab-panel" id="comissoes-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Comissões Técnicas</span><span class="table-count-badge" id="count-comissoes">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('comissoes-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>Inscrição</th><th>Nome</th><th>Nacionalidade</th><th>Seleção FK</th></tr></thead><tbody id="tbody-comissoes"><tr><td colspan="4"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-comissoes">Aguardando dados</div>
+            </div>
+        </div>
+
+        <!-- TREINADORES -->
+        <div class="tab-panel" id="treinadores-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Treinadores</span><span class="table-count-badge" id="count-treinadores">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('treinadores-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>Comissão FK</th><th>Estilo de Jogo</th><th>Esquema Tático</th><th>Metodologia</th></tr></thead><tbody id="tbody-treinadores"><tr><td colspan="4"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-treinadores">Aguardando dados</div>
+            </div>
+        </div>
+
+        <!-- PREPARADORES -->
+        <div class="tab-panel" id="preparadores-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Preparadores Físicos</span><span class="table-count-badge" id="count-preparadores">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('preparadores-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>Comissão FK</th><th>Especialização</th><th>Metodologia de Treino</th></tr></thead><tbody id="tbody-preparadores"><tr><td colspan="3"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-preparadores">Aguardando dados</div>
+            </div>
+        </div>
+
+        <!-- AUXILIARES -->
+        <div class="tab-panel" id="auxiliares-tab">
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-toolbar-left"><div class="table-entity-dot"></div><span class="table-entity-name">Auxiliares Técnicos</span><span class="table-count-badge" id="count-auxiliares">—</span></div>
+                    <button class="btn-refresh" onclick="carregarTabela('auxiliares-tab')"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                </div>
+                <div class="table-scroll"><table class="data-table"><thead><tr><th>Comissão FK</th><th>Especialidade</th><th>Foco Setorial</th></tr></thead><tbody id="tbody-auxiliares"><tr><td colspan="3"><div class="table-state loading"><div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><p>Carregando...</p></div></td></tr></tbody></table></div>
+                <div class="table-footer" id="footer-auxiliares">Aguardando dados</div>
+            </div>
+        </div>
+
+    </div><!-- /consulta-section -->
+
+    <!-- ══════════════════════════════════════════
+    06 — DASHBOARD: FUNÇÕES, PROCEDURES,
+    TRIGGERS, VIEWS E CONSULTAS SQL
+    ══════════════════════════════════════════ -->
+    <div class="tier">
+        <div class="tier-header">
+            <span class="tier-num">06 —</span>
+            <span class="tier-title">Dashboard — Funções, Procedures, Triggers, Views &amp; Consultas</span>
+            <div class="tier-rule"></div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-row">
+            <div class="kpi-card kc-green"><div class="kpi-label">Jogadores</div><div class="kpi-value" id="kpi-jog">—</div><div class="kpi-sub">cadastrados</div></div>
+            <div class="kpi-card kc-gold"> <div class="kpi-label">Seleções</div> <div class="kpi-value" id="kpi-sel">—</div><div class="kpi-sub">no torneio</div></div>
+            <div class="kpi-card kc-blue"> <div class="kpi-label">Jogos</div> <div class="kpi-value" id="kpi-jog2">—</div><div class="kpi-sub">disputados</div></div>
+            <div class="kpi-card kc-red"> <div class="kpi-label">Suspensões</div><div class="kpi-value" id="kpi-susp">—</div><div class="kpi-sub">ativas</div></div>
+        </div>
+
+        <!-- ── FUNÇÕES ── -->
+        <div class="dash-section">
+            <div class="section-head">
+                <span class="section-num-d">FN —</span>
+                <span class="section-label">Funções SQL</span>
+                <span class="section-tag tag-fn">FUNCTION</span>
+                <div class="tier-rule"></div>
+            </div>
+            <div class="dash-grid-2">
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">fn_categoria_estadio</div><div class="dash-card-desc">Classifica o porte (Elite / Grande / Médio / Pequeno) pelo ID do estádio.</div></div>
+                        <span class="section-tag tag-fn">FUNCTION</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="exec-form">
+                            <div class="exec-group"><label>ID do Estádio</label><input type="number" id="fn1-id" placeholder="1–30" min="1"></div>
+                            <button class="btn-exec e-blue" onclick="execFnCategoria()"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>Executar</button>
+                        </div>
+                        <div class="res-box" id="rfn1"><div class="res-box-head"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span id="rfn1-t">Resultado</span></div><div class="res-box-body" id="rfn1-b"></div></div>
+                        <div class="dash-inner-table hidden" id="fn1-wrap">
+                            <div class="dash-inner-scroll"><table class="dash-data-table"><thead><tr><th>ID</th><th>Nome</th><th>Capacidade</th><th>Categoria</th></tr></thead><tbody id="fn1-tbody"></tbody></table></div>
+                            <div class="dash-table-footer" id="fn1-foot"></div>
+                        </div>
+                        <div style="margin-top:.9rem;">
+                            <button class="btn-exec e-green" onclick="carregarTodosEstadiosFn()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Ver todos categorizados</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">categorizar_maturidade_selecao</div><div class="dash-card-desc">Retorna Experiente / Equilibrado / Jovem pelo ID da seleção.</div></div>
+                        <span class="section-tag tag-fn">FUNCTION</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="exec-form">
+                            <div class="exec-group"><label>ID da Seleção</label><input type="number" id="fn2-id" placeholder="1–31" min="1"></div>
+                            <button class="btn-exec e-blue" onclick="execFnMaturidade()"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>Executar</button>
+                        </div>
+                        <div class="res-box" id="rfn2"><div class="res-box-head"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span id="rfn2-t">Resultado</span></div><div class="res-box-body" id="rfn2-b"></div></div>
+                        <div class="dash-inner-table hidden" id="fn2-wrap">
+                            <div class="dash-inner-scroll"><table class="dash-data-table"><thead><tr><th>Inscrição</th><th>Nome</th><th>Média Idade</th><th>Maturidade</th></tr></thead><tbody id="fn2-tbody"></tbody></table></div>
+                            <div class="dash-table-footer" id="fn2-foot"></div>
+                        </div>
+                        <div style="margin-top:.9rem;">
+                            <button class="btn-exec e-green" onclick="carregarTodasMaturidades()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Ver todas categorizadas</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── PROCEDURES ── -->
+        <div class="dash-section">
+            <div class="section-head">
+                <span class="section-num-d">PROC —</span>
+                <span class="section-label">Procedimentos Armazenados</span>
+                <span class="section-tag tag-proc">PROCEDURE</span>
+                <div class="tier-rule"></div>
+            </div>
+            <div class="dash-grid-2">
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">atualizar_pontuacao_selecao</div><div class="dash-card-desc">+3 vitória / +1 empate e recalcula média de gols. Dispara o trigger de auditoria.</div></div>
+                        <span class="section-tag tag-proc">PROCEDURE</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="exec-form">
+                            <div class="exec-group"><label>ID Seleção</label><input type="number" id="p1-id" placeholder="ex: 1" min="1"></div>
+                            <div class="exec-group"><label>Resultado</label><select id="p1-res"><option value="vitoria">Vitória (+3)</option><option value="empate">Empate (+1)</option><option value="derrota">Derrota (0)</option></select></div>
+                            <div class="exec-group"><label>Gols</label><input type="number" id="p1-gols" placeholder="ex: 2" min="0"></div>
+                            <button class="btn-exec e-gold" onclick="execProcPontuacao()"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>Executar</button>
+                        </div>
+                        <div class="res-box" id="rp1"><div class="res-box-head"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span id="rp1-t">Resultado</span></div><div class="res-box-body" id="rp1-b"></div></div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">atualizar_lugares_grupo</div><div class="dash-card-desc">Reclassifica 1º–4º lugar de um grupo por pontuação e ranking FIFA.</div></div>
+                        <span class="section-tag tag-proc">PROCEDURE</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="exec-form">
+                            <div class="exec-group"><label>Letra do Grupo</label><input type="text" id="p2-letra" placeholder="ex: A" maxlength="1" style="max-width:75px;text-transform:uppercase"></div>
+                            <button class="btn-exec e-gold" onclick="execProcGrupo()"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>Executar</button>
+                        </div>
+                        <div class="res-box" id="rp2"><div class="res-box-head"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span id="rp2-t">Resultado</span></div><div class="res-box-body" id="rp2-b"></div></div>
+                        <div class="dash-inner-table hidden" id="p2-wrap">
+                            <div class="dash-inner-scroll"><table class="dash-data-table"><thead><tr><th>Grupo</th><th>1º</th><th>2º</th><th>3º</th><th>4º</th></tr></thead><tbody id="p2-tbody"></tbody></table></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── TRIGGERS ── -->
+        <div class="dash-section">
+            <div class="section-head">
+                <span class="section-num-d">TRG —</span>
+                <span class="section-label">Triggers — Efeitos Visíveis</span>
+                <span class="section-tag tag-trig">TRIGGER</span>
+                <div class="tier-rule"></div>
+            </div>
+            <div class="dash-grid-2">
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">trg_audit_update_selecao</div><div class="dash-card-desc">Registra em <code>logs_auditoria</code> toda alteração de pontuação após UPDATE em seleção.</div></div>
+                        <span class="section-tag tag-trig">TRIGGER</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <p style="font-size:.74rem;color:var(--muted);margin-bottom:.85rem;">Acionado automaticamente pela procedure de pontuação. Veja os registros gerados:</p>
+                        <button class="btn-exec e-red" id="btn-logs" onclick="carregarLogs()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Carregar log de auditoria</button>
+                        <div id="log-area" style="margin-top:.9rem;display:none;">
+                            <div class="log-feed" id="log-feed"></div>
+                            <div style="margin-top:.5rem;font-size:.65rem;color:var(--muted)" id="log-foot"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">trg_cartao_vermelho_ins</div><div class="dash-card-desc">Ao inserir cartão vermelho, cria/incrementa suspensão automaticamente em <code>suspensoes</code>.</div></div>
+                        <span class="section-tag tag-trig">TRIGGER</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="trig-cols">
+                            <div class="trig-panel">
+                                <div class="trig-panel-title"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>Registrar Cartão</div>
+                                <div style="display:flex;flex-direction:column;gap:.5rem;">
+                                    <div class="exec-group"><label>Jogador FK</label><input type="number" id="t2-jog" placeholder="ID" min="1"></div>
+                                    <div class="exec-group"><label>Jogo FK</label><input type="number" id="t2-jogo" placeholder="ID" min="1"></div>
+                                    <div class="exec-group"><label>Tipo</label><select id="t2-tipo"><option value="amarelo">Amarelo</option><option value="vermelho">Vermelho ⚡</option></select></div>
+                                    <div class="exec-group"><label>Minuto</label><input type="number" id="t2-min" placeholder="45" min="1" max="120"></div>
+                                    <button class="btn-exec e-red" onclick="registrarCartao()"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>Registrar</button>
+                                </div>
+                            </div>
+                            <div class="trig-panel">
+                                <div class="trig-panel-title"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Suspensões Ativas</div>
+                                <button class="btn-exec e-blue" style="margin-bottom:.65rem;" onclick="carregarSuspensoes()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Atualizar</button>
+                                <div id="susp-area"><div class="d-state"><div class="d-state-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><p>Clique em Atualizar</p></div></div>
+                            </div>
+                        </div>
+                        <div class="res-box" id="rt2" style="margin-top:.85rem;"><div class="res-box-head"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span id="rt2-t">Resultado</span></div><div class="res-box-body" id="rt2-b"></div></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── VIEWS ── -->
+        <div class="dash-section">
+            <div class="section-head">
+                <span class="section-num-d">VIEW —</span>
+                <span class="section-label">Views</span>
+                <span class="section-tag tag-view">VIEW</span>
+                <div class="tier-rule"></div>
+            </div>
+            <div class="dash-grid-2">
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">v_escalacao_estadios</div><div class="dash-card-desc">Jogadores × estádio × país sede × jogo (fase de grupos). Filtre por país.</div></div>
+                        <span class="section-tag tag-view">VIEW</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="exec-form" style="margin-bottom:.85rem;">
+                            <div class="exec-group"><label>País sede (opcional)</label><input type="text" id="v1-filtro" placeholder="ex: Brasil"></div>
+                            <button class="btn-exec e-green" onclick="carregarEscalacao()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Consultar</button>
+                        </div>
+                        <div id="v1-area"><div class="d-state"><div class="d-state-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><p>Clique em Consultar</p></div></div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">v_selecoes_topo</div><div class="dash-card-desc">Seleções com ranking abaixo da média geral, com mascote e gráfico.</div></div>
+                        <span class="section-tag tag-view">VIEW</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <button class="btn-exec e-green" style="margin-bottom:.85rem;" onclick="carregarSelecoesTopo()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Consultar</button>
+                        <div id="v2-area"><div class="d-state"><div class="d-state-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><p>Clique em Consultar</p></div></div>
+                        <div id="v2-chart" style="display:none;" class="chart-container"><canvas id="chart-topo"></canvas></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── CONSULTAS SQL ── -->
+        <div class="dash-section">
+            <div class="section-head">
+                <span class="section-num-d">SQL —</span>
+                <span class="section-label">Consultas SQL</span>
+                <span class="section-tag tag-sql">QUERY</span>
+                <div class="tier-rule"></div>
+            </div>
+            <div class="dash-grid-2">
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">Média de Idade por Continente</div><div class="dash-card-desc">JOIN + GROUP BY + HAVING. Filtre pelo mínimo de média.</div></div>
+                        <span class="section-tag tag-sql">QUERY</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="exec-form" style="margin-bottom:.85rem;">
+                            <div class="exec-group"><label>Mínimo (anos)</label><input type="number" id="q1-min" value="25" min="0" max="40" style="max-width:100px;"></div>
+                            <button class="btn-exec e-green" onclick="carregarMediaContinentes()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Consultar</button>
+                        </div>
+                        <div id="q1-area"><div class="d-state"><div class="d-state-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><p>Clique em Consultar</p></div></div>
+                        <div id="q1-chart" style="display:none;" class="chart-container"><canvas id="chart-cont"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">Seleções sem Jogadores</div><div class="dash-card-desc">LEFT JOIN + IS NULL — identifica seleções sem atletas cadastrados.</div></div>
+                        <span class="section-tag tag-sql">QUERY</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <button class="btn-exec e-green" style="margin-bottom:.85rem;" onclick="carregarSemJogadores()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Consultar</button>
+                        <div id="q2-area"><div class="d-state"><div class="d-state-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><p>Clique em Consultar</p></div></div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">Jogadores × Mascote</div><div class="dash-card-desc">JOIN triplo jogador + seleção + mascote. Filtre por nome de seleção.</div></div>
+                        <span class="section-tag tag-sql">QUERY</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="exec-form" style="margin-bottom:.85rem;">
+                            <div class="exec-group"><label>Nome da Seleção</label><input type="text" id="q3-sel" placeholder="ex: Brasil"></div>
+                            <button class="btn-exec e-green" onclick="carregarJogMascote()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Consultar</button>
+                        </div>
+                        <div id="q3-area"><div class="d-state"><div class="d-state-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><p>Informe uma seleção</p></div></div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <div><div class="dash-card-title">Jogos de Alto Desempenho</div><div class="dash-card-desc">Subquery IN — jogos cujo vencedor tem pontuação acima do limiar definido.</div></div>
+                        <span class="section-tag tag-sql">QUERY</span>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="exec-form" style="margin-bottom:.85rem;">
+                            <div class="exec-group"><label>Pontuação mínima</label><input type="number" id="q4-pts" value="5" min="0" style="max-width:110px;"></div>
+                            <button class="btn-exec e-green" onclick="carregarJogosDestaque()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Consultar</button>
+                        </div>
+                        <div id="q4-area"><div class="d-state"><div class="d-state-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><p>Clique em Consultar</p></div></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div><!-- /tier 06 -->
+
+</main>
+
+<!-- ─── MODAL ─── -->
+<div class="modal-overlay" id="modalOverlay" onclick="fecharModalOverlay(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <div class="modal-eyebrow">Gerenciar registro</div>
+                <div class="modal-title" id="modalTitle">—</div>
+            </div>
+            <button class="modal-close" onclick="fecharModal()" title="Fechar">✕</button>
+        </div>
+
+        <!-- JOGADOR -->
+        <form method="post" action="/jogadores" id="jogadores">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-row">
+                <div class="form-group"><label>Nº da Camisa</label><input type="number" name="n_camisa" placeholder="10"></div>
+                <div class="form-group"><label>Nº de Inscrição</label><input type="number" name="n_inscricao" placeholder="001"></div>
+            </div>
+            <div class="form-group"><label>Nome do Atleta</label><input type="text" name="nome_atleta" placeholder="Nome completo"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Posição</label><input type="text" name="posicao" placeholder="Atacante"></div>
+                <div class="form-group"><label>Idade</label><input type="number" name="idade" placeholder="25"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Seleção <span class="fk-tag">FK</span></label><input type="number" name="fk_selecao_inscricao" placeholder="ID"></div>
+                <div class="form-group"><label>Capitão <span class="fk-tag">FK</span></label><input type="number" name="capitao" placeholder="ID"></div>
+            </div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+        <!-- SELEÇÃO -->
+        <form id="selecao" method="post" action="/selecao">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-row">
+                <div class="form-group"><label>Nº de Inscrição</label><input type="number" name="n_inscricao" placeholder="001"></div>
+                <div class="form-group"><label>Ranking FIFA</label><input type="number" name="rankingFifa" placeholder="1"></div>
+            </div>
+            <div class="form-group"><label>Nome da Seleção</label><input type="text" name="nome" placeholder="Ex: Real Madrid"></div>
+            <div class="form-group"><label>Continente</label><input type="text" name="continente" placeholder="Europa"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Média de Idade</label><input type="number" name="mediaIdade" placeholder="26"></div>
+                <div class="form-group"><label>Média de Gols</label><input type="number" name="mediaGols" placeholder="2.4"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Pontuação</label><input type="number" name="pontuacao" placeholder="0"></div>
+                <div class="form-group"><label>Grupo <span class="fk-tag">FK</span></label><input type="text" name="fk_grupo_letra_identificadora" placeholder="A" maxlength="1"></div>
+            </div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+        <!-- TREINADOR -->
+        <form method="post" id="treinador" action="/treinador">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-group"><label>Comissão Técnica <span class="fk-tag">FK</span></label><input type="number" name="fkComissaoTecnicaInscricao" placeholder="ID da comissão"></div>
+            <div class="form-group"><label>Estilo de Jogo</label><input type="text" name="estiloJogo" placeholder="Posse de bola"></div>
+            <div class="form-group"><label>Esquema Tático</label><input type="text" name="esquemaTaticoPref" placeholder="4-3-3"></div>
+            <div class="form-group"><label>Metodologia de Treino</label><input type="text" name="metodologiaTreino" placeholder="Alta intensidade"></div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+        <!-- PREPARADOR -->
+        <form method="post" id="preparador" action="/preparador">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-group"><label>Comissão Técnica <span class="fk-tag">FK</span></label><input type="number" name="fkComissaoTecnicaInscricao" placeholder="ID da comissão"></div>
+            <div class="form-group"><label>Especialização</label><input type="text" name="especializacao" placeholder="Musculação"></div>
+            <div class="form-group"><label>Metodologia de Treino</label><input type="text" name="metodologiaTreino" placeholder="Periodização tática"></div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+        <!-- PAÍS SEDE -->
+        <form method="post" id="pais" action="/pais">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-group"><label>Nome do País</label><input type="text" name="nomePais" placeholder="Estados Unidos"></div>
+            <div class="form-group"><label>Nº de Jogos Sediados</label><input type="number" name="numeroJogosDoPais" placeholder="12"></div>
+            <div class="form-group"><label>Nº de Estádios</label><input type="number" name="numeroEstadios" placeholder="3"></div>
+            <div class="form-group"><label>Nome do Mascote</label><input type="text" name="nomeMascote" placeholder="Sam the Eagle"></div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+        <!-- MASCOTE -->
+        <form method="post" id="mascote" action="/mascote">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-row">
+                <div class="form-group"><label>ID do Mascote</label><input type="number" name="id" placeholder="001"></div>
+                <div class="form-group"><label>Seleção <span class="fk-tag">FK</span></label><input type="number" name="fkInscricaoSelecao" placeholder="ID"></div>
+            </div>
+            <div class="form-group"><label>Nome do Mascote</label><input type="text" name="nome" placeholder="Ex: Fuleco"></div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+        <!-- JOGO -->
+        <form method="post" id="jogo" action="/jogo">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-row">
+                <div class="form-group"><label>ID do Jogo</label><input type="number" name="nomePais" placeholder="001"></div>
+                <div class="form-group"><label>Placar</label><input type="text" name="placar" placeholder="2 x 1"></div>
+            </div>
+            <div class="form-group"><label>Data e Hora</label><input type="datetime-local" name="data"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Vencedor</label><input type="text" name="vencedor" placeholder="Nome"></div>
+                <div class="form-group"><label>Perdedor</label><input type="text" name="perdedor" placeholder="Nome"></div>
+            </div>
+            <div class="form-group"><label>Tipo de Jogo</label><input type="text" name="tipoJogo" placeholder="Fase de grupos"></div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+        <!-- ESTÁDIO -->
+        <form method="post" id="estadio" action="/estadio">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-row">
+                <div class="form-group"><label>ID do Estádio</label><input type="number" name="id" placeholder="001"></div>
+                <div class="form-group"><label>Capacidade</label><input type="number" name="capacidadeMaxima" placeholder="80000"></div>
+            </div>
+            <div class="form-group"><label>Nome do Estádio</label><input type="text" name="nome" placeholder="MetLife Stadium"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Cidade</label><input type="text" name="cidade" placeholder="Nova York"></div>
+                <div class="form-group"><label>País Sede <span class="fk-tag">FK</span></label><input type="text" name="fkPaisSedeNomePais" placeholder="Nome"></div>
+            </div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+        <!-- COMISSÃO TÉCNICA -->
+        <form method="post" id="comissao" action="/comissao">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-row">
+                <div class="form-group"><label>Inscrição</label><input type="number" name="inscricao" placeholder="001"></div>
+                <div class="form-group"><label>Seleção <span class="fk-tag">FK</span></label><input type="number" name="fkInscricaoSelecao" placeholder="ID"></div>
+            </div>
+            <div class="form-group"><label>Nome</label><input type="text" name="nome" placeholder="Nome completo"></div>
+            <div class="form-group"><label>Nacionalidade</label><input type="text" name="nacionalidade" placeholder="Brasileiro"></div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+        <!-- AUXILIAR TÉCNICO -->
+        <form method="post" id="auxiliar" action="/auxiliar">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-group"><label>Comissão Técnica <span class="fk-tag">FK</span></label><input type="number" name="fkComissaoTecnicaInscricao" placeholder="ID da comissão"></div>
+            <div class="form-group"><label>Especialidade</label><input type="text" name="especialidade" placeholder="Análise de vídeo"></div>
+            <div class="form-group"><label>Foco Setorial</label><input type="text" name="focoSetorial" placeholder="Defesa"></div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+        <!-- GRUPO -->
+        <form method="post" id="grupo" action="/grupo">
+            <div class="form-group"><label>Operação</label><select name="operacao"><option value="Inserir">Inserir</option><option value="Deletar">Deletar</option><option value="Alterar">Alterar</option></select></div>
+            <div class="form-group"><label>Letra Identificadora</label><input type="text" name="letraIdentificadora" placeholder="A" maxlength="1"></div>
+            <div class="form-row">
+                <div class="form-group"><label>1º Lugar</label><input type="text" name="lugar1" placeholder="Seleção"></div>
+                <div class="form-group"><label>2º Lugar</label><input type="text" name="lugar2" placeholder="Seleção"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>3º Lugar</label><input type="text" name="lugar3" placeholder="Seleção"></div>
+                <div class="form-group"><label>4º Lugar</label><input type="text" name="Lugar4" placeholder="Seleção"></div>
+            </div>
+            <button type="submit" class="btn-submit">Confirmar</button>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    /* ══════════════════════════════════════════
+    MODAL
+    ══════════════════════════════════════════ */
+    function abrirModal(formId, titulo) {
+        document.querySelectorAll('.modal form').forEach(f => f.classList.remove('form-active'));
+        const form = document.getElementById(formId);
+        if (form) form.classList.add('form-active');
+        document.getElementById('modalTitle').textContent = titulo;
+        document.getElementById('modalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function fecharModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    function fecharModalOverlay(e) {
+        if (e.target === document.getElementById('modalOverlay')) fecharModal();
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(); });
+
+    document.addEventListener('DOMContentLoaded', carregarKPIs);
+
+    /* ══════════════════════════════════════════
+    ABAS — SEÇÃO 05
+    ══════════════════════════════════════════ */
+    const panelConfig = {
+        'jogadores-tab': { tbody: 'tbody-jogadores', count: 'count-jogadores', footer: 'footer-jogadores', url: '/api/jogadores' },
+        'selecoes-tab': { tbody: 'tbody-selecoes', count: 'count-selecoes', footer: 'footer-selecoes', url: '/api/selecoes' },
+        'grupos-tab': { tbody: 'tbody-grupos', count: 'count-grupos', footer: 'footer-grupos', url: '/api/grupos' },
+        'jogos-tab': { tbody: 'tbody-jogos', count: 'count-jogos', footer: 'footer-jogos', url: '/api/jogos' },
+        'estadios-tab': { tbody: 'tbody-estadios', count: 'count-estadios', footer: 'footer-estadios', url: '/api/estadios' },
+        'paises-tab': { tbody: 'tbody-paises', count: 'count-paises', footer: 'footer-paises', url: '/api/paises' },
+        'mascotes-tab': { tbody: 'tbody-mascotes', count: 'count-mascotes', footer: 'footer-mascotes', url: '/api/mascotes' },
+        'comissoes-tab': { tbody: 'tbody-comissoes', count: 'count-comissoes', footer: 'footer-comissoes', url: '/api/comissoes' },
+        'treinadores-tab': { tbody: 'tbody-treinadores', count: 'count-treinadores', footer: 'footer-treinadores', url: '/api/treinadores' },
+        'preparadores-tab': { tbody: 'tbody-preparadores', count: 'count-preparadores', footer: 'footer-preparadores', url: '/api/preparadores' },
+        'auxiliares-tab': { tbody: 'tbody-auxiliares', count: 'count-auxiliares', footer: 'footer-auxiliares', url: '/api/auxiliares' },
+    };
+
+    function trocarAba(panelId, btnEl) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('panel-active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(panelId).classList.add('panel-active');
+        btnEl.classList.add('active');
+        const cfg = panelConfig[panelId];
+        if (cfg) {
+            const tbody = document.getElementById(cfg.tbody);
+            const jaCarregado = tbody && !tbody.querySelector('.table-state');
+            if (!jaCarregado) fetchTabela(cfg);
+        }
     }
 
-    @PostMapping("/jogadores")
-    public String operacaoJogadores(@RequestParam("operacao") String operacao,
-                                    @RequestParam("n_camisa") int camisa,
-                                    @RequestParam("n_inscricao") int inscricao,
-                                    @RequestParam("posicao") String posicao,
-                                    @RequestParam("nome_atleta") String nome_atleta,
-                                    @RequestParam("idade") int idade,
-                                    @RequestParam("fk_selecao_inscricao") int fk_selecao_inscricao,
-                                    @RequestParam("capitao") int capitao,
-                                    Model model) {
-        Jogador jogador = new Jogador(camisa, inscricao, posicao, nome_atleta, idade, fk_selecao_inscricao, capitao);
-        if (operacao.equals("Inserir")) jogadorRepository.inserirJogador(jogador);
-        if (operacao.equals("Alterar")) jogadorRepository.atualizarJogador(jogador);
-        if (operacao.equals("Deletar")) jogadorRepository.deletarJogador(jogador);
-        return "redirect:/";
+    function carregarTabela(panelId) {
+        const cfg = panelConfig[panelId];
+        if (cfg) fetchTabela(cfg);
     }
 
-    @PostMapping("/selecao")
-    public String operacaoSelecao(@RequestParam("operacao") String operacao,
-                                  @RequestParam("n_inscricao") int inscricao,
-                                  @RequestParam("mediaGols") int mediaGols,
-                                  @RequestParam("rankingFifa") int rankingFifa,
-                                  @RequestParam("mediaIdade") int mediaIdade,
-                                  @RequestParam("fk_grupo_letra_identificadora") String fk_letra_identificadora,
-                                  @RequestParam("pontuacao") int pontuacao,
-                                  @RequestParam("nome") String nome,
-                                  @RequestParam("continente") String continente,
-                                  Model model) {
-        Selecao selecao = new Selecao(inscricao, mediaIdade, mediaGols, rankingFifa, continente, pontuacao, nome, fk_letra_identificadora);
-        if (operacao.equals("Inserir")) selecaoRepository.inserirSelecao(selecao);
-        if (operacao.equals("Alterar")) selecaoRepository.atualizarSelecao(selecao);
-        if (operacao.equals("Deletar")) selecaoRepository.deletarSelecao(selecao);
-        return "redirect:/";
+    function fetchTabela(cfg) {
+        const tbody = document.getElementById(cfg.tbody);
+        const countEl = document.getElementById(cfg.count);
+        const footerEl = document.getElementById(cfg.footer);
+        const cols = tbody.closest('table').querySelectorAll('thead th').length;
+
+        tbody.innerHTML = `<tr><td colspan="${cols}"><div class="table-state loading">
+<div class="table-state-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div>
+<p>Carregando dados...</p></div></td></tr>`;
+
+        const panel = tbody.closest('.tab-panel');
+        const btnRefresh = panel ? panel.querySelector('.btn-refresh') : null;
+        if (btnRefresh) btnRefresh.classList.add('loading');
+
+        fetch(cfg.url)
+            .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+            .then(data => {
+                if (btnRefresh) btnRefresh.classList.remove('loading');
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="${cols}"><div class="table-state">
+<div class="table-state-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+<p>Nenhum registro encontrado</p></div></td></tr>`;
+                    if (countEl) countEl.textContent = '0 registros';
+                    if (footerEl) footerEl.textContent = 'Tabela vazia';
+                    return;
+                }
+                tbody.innerHTML = renderRows(cfg.tbody, data);
+                if (countEl) countEl.textContent = data.length + ' registro' + (data.length !== 1 ? 's' : '');
+                const now = new Date().toLocaleTimeString('pt-BR');
+                if (footerEl) footerEl.textContent = `${data.length} registro(s) • Atualizado às ${now}`;
+            })
+            .catch(err => {
+                if (btnRefresh) btnRefresh.classList.remove('loading');
+                tbody.innerHTML = `<tr><td colspan="${cols}"><div class="table-state error">
+<div class="table-state-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+<p>Erro ao carregar: ${err.message}</p></div></td></tr>`;
+                if (countEl) countEl.textContent = 'erro';
+                if (footerEl) footerEl.textContent = 'Falha na requisição';
+            });
     }
 
-    @PostMapping("/treinador")
-    public String operacaoTreinador(@RequestParam("fk_comissao_tecnica_inscricao") int fkComissaoTecnicaInscricao,
-                                    @RequestParam("estilo_jogo") String estiloJogo,
-                                    @RequestParam("esquema_tatico_pref") String esquemaTaticoPref,
-                                    @RequestParam("metodologia_treino") String metodologiaTreino) {
-        Treinador treinador = new Treinador(fkComissaoTecnicaInscricao, estiloJogo, esquemaTaticoPref, metodologiaTreino);
-        return "redirect:/";
+    function renderRows(tbodyId, data) {
+        const nil = v => (v === null || v === undefined || v === '') ? '<span style="color:#b0bdb0">—</span>' : v;
+        const pk = v => `<span class="td-pk">${nil(v)}</span>`;
+        const badge = v => (v !== null && v !== undefined && v !== '') ? `<span class="td-badge">${v}</span>` : '<span style="color:#b0bdb0">—</span>';
+        const green = v => (v !== null && v !== undefined && v !== '') ? `<span class="td-green">${v}</span>` : '<span style="color:#b0bdb0">—</span>';
+        const num = v => (v !== null && v !== undefined) ? v.toLocaleString('pt-BR') : '<span style="color:#b0bdb0">—</span>';
+
+        const rows = {
+            'tbody-jogadores': d => `<td>${pk(d.inscricao)}</td><td class="td-pk">${nil(d.nome)}</td><td>${nil(d.numeroCamisa)}</td><td>${green(d.posicao)}</td><td>${nil(d.idade)}</td><td>${badge(d.fkSelecaoInscricao)}</td><td>${badge(d.capitao)}</td>`,
+            'tbody-selecoes': d => `<td>${pk(d.inscricao)}</td><td class="td-pk">${nil(d.nome)}</td><td>${nil(d.continente)}</td><td>${nil(d.rankingFifa)}</td><td>${green(d.pontuacao)}</td><td>${nil(d.mediaIdade)}</td><td>${nil(d.mediaGols)}</td><td>${badge(d.fk_grupo_letra_identificacao)}</td>`,
+            'tbody-grupos': d => `<td>${pk(d.letraIdentificadora)}</td><td class="td-pk">${nil(d.lugar1)}</td><td>${nil(d.lugar2)}</td><td>${nil(d.lugar3)}</td><td>${nil(d.lugar4)}</td>`,
+            'tbody-jogos': d => `<td>${pk(d.id)}</td><td>${green(d.placar)}</td><td>${nil(d.data ? new Date(d.data).toLocaleString('pt-BR') : null)}</td><td class="td-pk">${nil(d.vencedor)}</td><td>${nil(d.perdedor)}</td><td>${badge(d.tipoJogo)}</td>`,
+            'tbody-estadios': d => `<td>${pk(d.id)}</td><td class="td-pk">${nil(d.nome)}</td><td>${nil(d.cidade)}</td><td>${num(d.capacidadeMaxima)}</td><td>${badge(d.fkPaisSedeNomePais)}</td>`,
+            'tbody-paises': d => `<td class="td-pk">${nil(d.nomePais)}</td><td>${nil(d.numeroJogosDopais)}</td><td>${nil(d.numeroEstadios)}</td><td>${green(d.nomeMascote)}</td>`,
+            'tbody-mascotes': d => `<td>${pk(d.id)}</td><td class="td-pk">${nil(d.nome)}</td><td>${badge(d.fkSelecaoInscricao !== undefined ? d.fkSelecaoInscricao : d.fkInscricaoSelecao)}</td>`,
+            'tbody-comissoes': d => `<td>${pk(d.inscricao)}</td><td class="td-pk">${nil(d.nome)}</td><td>${nil(d.nacionalidade)}</td><td>${badge(d.fkInscricaoSelecao)}</td>`,
+            'tbody-treinadores': d => `<td>${pk(d.fkComissaoTecnicaInscricao)}</td><td>${nil(d.estiloDeJogo)}</td><td>${green(d.esquemaTaticoPref)}</td><td>${nil(d.metodologiaTreino)}</td>`,
+            'tbody-preparadores':d => `<td>${pk(d.fkComissaoTecnicaInscricao)}</td><td>${nil(d.especializacao)}</td><td>${nil(d.metodologiaTreino)}</td>`,
+            'tbody-auxiliares': d => `<td>${pk(d.fkComissaoTecnicaInscricao)}</td><td>${nil(d.especialidade)}</td><td>${green(d.focoSetorial)}</td>`,
+        };
+
+        const renderer = rows[tbodyId];
+        if (!renderer) return '';
+        return data.map(d => `<tr>${renderer(d)}</tr>`).join('');
     }
 
-    @PostMapping("/preparador")
-    public String operacaoPreparadorFisico(@RequestParam("fk_comissao_tecnica_inscricao") int fkComissaoTecnicaInscricao,
-                                           @RequestParam("especializacao") String especializacao,
-                                           @RequestParam("metodologia_treino") String metodologiaTreino) {
-        PreparadorFisico preparador = new PreparadorFisico(fkComissaoTecnicaInscricao, especializacao, metodologiaTreino);
-        return "redirect:/";
+    /* carrega aba inicial ao abrir a página */
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchTabela(panelConfig['jogadores-tab']);
+    });
+
+    /* ══════════════════════════════════════════
+    DASHBOARD — HELPERS
+    ══════════════════════════════════════════ */
+    const dNil = v => (v === null || v === undefined || v === '') ? '—' : v;
+
+    function dState(mode, msg) {
+        const icons = {
+            loading: '<svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
+            empty: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+            error: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+        };
+        const spin = mode === 'loading' ? ' spin' : '';
+        const errCls = mode === 'error' ? ' err' : '';
+        return `<div class="d-state"><div class="d-state-icon${errCls}${spin}">${icons[mode]||icons.empty}</div><p>${msg}</p></div>`;
     }
 
-    @PostMapping("/pais")
-    public String operacaoPaisSede(@RequestParam("nome_pais") String nomePais,
-                                   @RequestParam("numero_jogos_pais") int numeroJogosDoPais) {
-        PaisSede pais = new PaisSede(nomePais, numeroJogosDoPais, 0, null);
-        return "redirect:/";
+    function showRes(id, type, title, html) {
+        const box = document.getElementById(id);
+        box.className = 'res-box visible ' + type;
+        document.getElementById(id + '-t').textContent = title;
+        document.getElementById(id + '-b').innerHTML = html;
     }
 
-    @PostMapping("/mascote")
-    public String operacaoMascote(@RequestParam("nome") String nome,
-                                  @RequestParam("id") int id,
-                                  @RequestParam("fk_inscricao_selecao") int fkInscricaoSelecao) {
-        Mascote mascote = new Mascote(nome, id, fkInscricaoSelecao);
-        return "redirect:/";
+    function buildDTable(cols, rows, rowFn) {
+        const ths = cols.map(c => `<th>${c}</th>`).join('');
+        const trs = rows.length
+            ? rows.map(r => `<tr>${rowFn(r)}</tr>`).join('')
+            : `<tr><td colspan="${cols.length}" style="padding:1.2rem;text-align:center;color:var(--muted)">Nenhum resultado</td></tr>`;
+        return `<div class="dash-inner-table"><div class="dash-inner-scroll">
+<table class="dash-data-table"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>
+</div><div class="dash-table-footer">${rows.length} registro(s)</div></div>`;
     }
 
-    @PostMapping("/jogo")
-    public String operacaoJogo(@RequestParam("nome_pais") int id,
-                               @RequestParam("placar") String placar,
-                               @RequestParam("data") LocalDateTime data,
-                               @RequestParam("vencedor") String vencedor,
-                               @RequestParam("perdedor") String perdedor,
-                               @RequestParam("tipo_jogo") String tipoJogo) {
-        Jogo jogo = new Jogo(id, data, placar, vencedor, perdedor, tipoJogo);
-        return "redirect:/";
+    async function dFetch(url) {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
     }
 
-    @PostMapping("/estadio")
-    public String operacaoEstadio(@RequestParam("id") int id,
-                                  @RequestParam("cidade") String cidade,
-                                  @RequestParam("capacidade_maxima") int capacidadeMaxima,
-                                  @RequestParam("nome") String nome,
-                                  @RequestParam("fk_pais_sede_nome") String fkPaisSedeNomePais) {
-        Estadio estadio = new Estadio(id, cidade, capacidadeMaxima, nome, fkPaisSedeNomePais);
-        return "redirect:/";
+    const dCharts = {};
+    function dBarChart(id, labels, values, label, color) {
+        const ctx = document.getElementById(id);
+        if (!ctx) return;
+        if (dCharts[id]) dCharts[id].destroy();
+        dCharts[id] = new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: { labels, datasets: [{ label, data: values, backgroundColor: color || 'rgba(2,185,6,.65)', borderColor: color || '#02B906', borderWidth: 1.5, borderRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { family: 'DM Sans', size: 11 } } },
+                    y: { grid: { color: '#E8FAE8' }, ticks: { font: { family: 'DM Sans', size: 11 } } }
+                }
+            }
+        });
     }
 
-    @PostMapping("/comissao")
-    public String operacaoComissaoTecnica(@RequestParam("nome") String nome,
-                                          @RequestParam("nacionalidade") String nacionalidade,
-                                          @RequestParam("inscricao") int inscricao,
-                                          @RequestParam("fk_inscricao_selecao2") int fkInscricaoSelecao) {
-        ComissaoTecnica comissao = new ComissaoTecnica(nome, nacionalidade, inscricao, fkInscricaoSelecao);
-        return "redirect:/";
+    /* ── KPIs ── */
+    async function carregarKPIs() {
+        try {
+            const [j, s, jo] = await Promise.all([dFetch('/api/jogadores'), dFetch('/api/selecoes'), dFetch('/api/jogos')]);
+            document.getElementById('kpi-jog').textContent = j.length;
+            document.getElementById('kpi-sel').textContent = s.length;
+            document.getElementById('kpi-jog2').textContent = jo.length;
+        } catch(e) {}
+        try {
+            const susp = await dFetch('/api/suspensoes');
+            document.getElementById('kpi-susp').textContent = susp.length;
+        } catch(e) { document.getElementById('kpi-susp').textContent = '0'; }
     }
 
-    @PostMapping("/auxiliar")
-    public String operacaoAuxiliarTecnico(@RequestParam("fk_comissao_tenica_inscricao") int fkComissaoTecnicaInscricao,
-                                          @RequestParam("especialidade") String especialidade,
-                                          @RequestParam("foco_setorial") String focoSetorial) {
-        AuxiliarTecnico auxiliarTecnico = new AuxiliarTecnico(fkComissaoTecnicaInscricao, especialidade, focoSetorial);
-        return "redirect:/";
+    /* ══════════════════════════════════════════
+    FUNÇÕES
+    ══════════════════════════════════════════ */
+    async function execFnCategoria() {
+        const id = document.getElementById('fn1-id').value.trim();
+        if (!id) { showRes('rfn1','s-err','Parâmetro ausente','Informe o ID do estádio.'); return; }
+        try {
+            const d = await dFetch(`/api/fn/categoria-estadio?id=${id}`);
+            showRes('rfn1','s-ok',`Estádio #${id}`,
+                `<strong>${dNil(d.nome)}</strong> — Capacidade: <strong>${(d.capacidadeMaxima||0).toLocaleString('pt-BR')}</strong><br>
+Categoria: <span style="font-weight:700;color:#2A398D">${dNil(d.categoria)}</span>`);
+        } catch(e) { showRes('rfn1','s-err','Erro',e.message); }
     }
 
-    @PostMapping("/grupo")
-    public String operacaoGrupo(@RequestParam("letra_identificadora") char letraIdentificadora,
-                                @RequestParam("lugar1") String lugar1,
-                                @RequestParam("fk_pais_sede_nome") String lugar2,
-                                @RequestParam("lugar3") String lugar3,
-                                @RequestParam("lugar4") String lugar4) {
-        Grupo grupo = new Grupo(letraIdentificadora, lugar1, lugar2, lugar3, lugar4);
-        return "redirect:/";
+    async function carregarTodosEstadiosFn() {
+        const wrap = document.getElementById('fn1-wrap');
+        const tbody = document.getElementById('fn1-tbody');
+        wrap.classList.remove('hidden');
+        tbody.innerHTML = `<tr><td colspan="4">${dState('loading','Carregando...')}</td></tr>`;
+        try {
+            const data = await dFetch('/api/fn/categoria-estadios-todos');
+            tbody.innerHTML = data.map(d => `<tr>
+<td class="d-pk">${dNil(d.id)}</td><td>${dNil(d.nome)}</td>
+<td>${(d.capacidadeMaxima||0).toLocaleString('pt-BR')}</td>
+<td><span class="d-blue">${dNil(d.categoria)}</span></td></tr>`).join('');
+            document.getElementById('fn1-foot').textContent = `${data.length} estádio(s)`;
+        } catch(e) { tbody.innerHTML = `<tr><td colspan="4">${dState('error',e.message)}</td></tr>`; }
     }
-}
+
+    async function execFnMaturidade() {
+        const id = document.getElementById('fn2-id').value.trim();
+        if (!id) { showRes('rfn2','s-err','Parâmetro ausente','Informe o ID da seleção.'); return; }
+        try {
+            const d = await dFetch(`/api/fn/maturidade-selecao?id=${id}`);
+            showRes('rfn2','s-ok',`Seleção #${id}`,
+                `<strong>${dNil(d.nome)}</strong> — Média de idade: <strong>${dNil(d.mediaIdade)}</strong> anos<br>
+Maturidade: <span style="font-weight:700;color:#2A398D">${dNil(d.maturidade)}</span>`);
+        } catch(e) { showRes('rfn2','s-err','Erro',e.message); }
+    }
+
+    async function carregarTodasMaturidades() {
+        const wrap = document.getElementById('fn2-wrap');
+        const tbody = document.getElementById('fn2-tbody');
+        wrap.classList.remove('hidden');
+        tbody.innerHTML = `<tr><td colspan="4">${dState('loading','Carregando...')}</td></tr>`;
+        try {
+            const data = await dFetch('/api/fn/maturidade-selecoes-todas');
+            tbody.innerHTML = data.map(d => `<tr>
+<td class="d-pk">${dNil(d.inscricao)}</td><td>${dNil(d.nome)}</td>
+<td>${dNil(d.mediaIdade)}</td>
+<td><span class="d-blue">${dNil(d.maturidade)}</span></td></tr>`).join('');
+            document.getElementById('fn2-foot').textContent = `${data.length} seleção(ões)`;
+        } catch(e) { tbody.innerHTML = `<tr><td colspan="4">${dState('error',e.message)}</td></tr>`; }
+    }
+
+    /* ══════════════════════════════════════════
+    PROCEDURES
+    ══════════════════════════════════════════ */
+    async function execProcPontuacao() {
+        const id = document.getElementById('p1-id').value.trim();
+        const res = document.getElementById('p1-res').value;
+        const gols = document.getElementById('p1-gols').value.trim();
+        if (!id || gols === '') { showRes('rp1','s-err','Campos obrigatórios','Preencha ID e gols.'); return; }
+        try {
+            await dFetch(`/procedure/pontuacao?inscricao=${id}&resultado=${res}&gols=${gols}`);
+            showRes('rp1','s-ok','Executado com sucesso',
+                `Seleção <strong>#${id}</strong> — resultado: <strong>${res}</strong>, gols: <strong>${gols}</strong>.<br>
+<small style="color:var(--muted)">Trigger <em>trg_audit_update_selecao</em> gerou um log automaticamente.</small>`);
+        } catch(e) { showRes('rp1','s-err','Erro',e.message); }
+    }
+
+    async function execProcGrupo() {
+        const letra = document.getElementById('p2-letra').value.trim().toUpperCase();
+        if (!letra) { showRes('rp2','s-err','Parâmetro ausente','Informe a letra do grupo.'); return; }
+        try {
+            await dFetch(`/procedure/grupo?letra=${letra}`);
+            const grupos = await dFetch('/api/grupos');
+            const g = grupos.find(x => String(x.letraIdentificadora).toUpperCase() === letra);
+            if (g) {
+                document.getElementById('p2-wrap').classList.remove('hidden');
+                document.getElementById('p2-tbody').innerHTML = `<tr>
+<td class="d-pk">${g.letraIdentificadora}</td>
+<td><span class="d-green">${dNil(g.lugar1)}</span></td>
+<td>${dNil(g.lugar2)}</td><td>${dNil(g.lugar3)}</td><td>${dNil(g.lugar4)}</td></tr>`;
+            }
+            showRes('rp2','s-ok','Executado com sucesso',`Grupo <strong>${letra}</strong> reclassificado.`);
+        } catch(e) { showRes('rp2','s-err','Erro',e.message); }
+    }
+
+    /* ══════════════════════════════════════════
+    TRIGGERS
+    ══════════════════════════════════════════ */
+    async function carregarLogs() {
+        const area = document.getElementById('log-area');
+        const feed = document.getElementById('log-feed');
+        const btn = document.getElementById('btn-logs');
+        area.style.display = 'block';
+        feed.innerHTML = dState('loading','Carregando...');
+        btn.classList.add('loading');
+        try {
+            const data = await dFetch('/estatisticas/logs');
+            btn.classList.remove('loading');
+            if (!data || !data.length) { feed.innerHTML = `<div style="padding:1rem;text-align:center;color:var(--muted);font-size:.76rem;">Nenhum log ainda. Execute a procedure de pontuação.</div>`; return; }
+            feed.innerHTML = [...data].reverse().map(d => {
+                const ant = d[4], nov = d[5];
+                const cls = (nov > ant) ? 'lg' : (nov < ant ? 'lr' : 'ly');
+                return `<div class="log-item">
+<div class="log-dot ${cls}"></div>
+<div class="log-meta">
+<div class="log-action">${dNil(d[2])} — ${dNil(d[1])} [${dNil(d[3])}]</div>
+<div class="log-detail">Antes: <strong>${dNil(ant)}</strong> → Depois: <strong>${dNil(nov)}</strong> &nbsp;|&nbsp; Usuário: ${dNil(d[6])}</div>
+</div>
+<div class="log-time">${d[7] ? new Date(d[7]).toLocaleString('pt-BR') : '—'}</div>
+</div>`;
+            }).join('');
+            document.getElementById('log-foot').textContent = `${data.length} entrada(s)`;
+        } catch(e) { btn.classList.remove('loading'); feed.innerHTML = dState('error',e.message); }
+    }
+
+    async function registrarCartao() {
+        const jog = document.getElementById('t2-jog').value.trim();
+        const jogo = document.getElementById('t2-jogo').value.trim();
+        const tipo = document.getElementById('t2-tipo').value;
+        const min = document.getElementById('t2-min').value.trim();
+        if (!jog || !jogo || !min) { showRes('rt2','s-err','Campos obrigatórios','Preencha jogador, jogo e minuto.'); document.getElementById('rt2').classList.add('visible'); return; }
+        try {
+            await dFetch(`/api/cartoes?jogador=${jog}&jogo=${jogo}&tipo=${tipo}&minuto=${min}`);
+            showRes('rt2','s-ok','Cartão registrado',
+                `Cartão <strong>${tipo}</strong> — jogador <strong>#${jog}</strong>, jogo <strong>#${jogo}</strong>, minuto <strong>${min}</strong>.
+${tipo === 'vermelho' ? '<br><span style="color:var(--red)">⚡ Trigger disparado — suspensão criada/incrementada.</span>' : ''}`);
+            document.getElementById('rt2').classList.add('visible');
+            if (tipo === 'vermelho') setTimeout(carregarSuspensoes, 500);
+        } catch(e) { showRes('rt2','s-err','Erro',e.message); document.getElementById('rt2').classList.add('visible'); }
+    }
+
+    async function carregarSuspensoes() {
+        const area = document.getElementById('susp-area');
+        area.innerHTML = dState('loading','Carregando...');
+        try {
+            const data = await dFetch('/api/suspensoes');
+            document.getElementById('kpi-susp').textContent = data.length;
+            if (!data.length) { area.innerHTML = dState('empty','Nenhuma suspensão ativa'); return; }
+            area.innerHTML = buildDTable(
+                ['Jogador FK','Jogos a Cumprir','Motivo'],
+                data,
+                d => `<td class="d-pk">${dNil(d.fkjogadorinscricao)}</td>
+<td><span class="d-red">${dNil(d.jogosACumprir)}</span></td>
+<td>${dNil(d.motivo)}</td>`
+            );
+        } catch(e) { area.innerHTML = dState('error',e.message); }
+    }
+
+    /* ══════════════════════════════════════════
+    VIEWS
+    ══════════════════════════════════════════ */
+    async function carregarEscalacao() {
+        const filtro = document.getElementById('v1-filtro').value.trim().toLowerCase();
+        const area = document.getElementById('v1-area');
+        area.innerHTML = dState('loading','Consultando view...');
+        try {
+            const data = await dFetch('/views/escalacao');
+            const fil = filtro ? data.filter(d => d[2] && d[2].toLowerCase().includes(filtro)) : data;
+            if (!fil.length) { area.innerHTML = dState('empty','Nenhum resultado'); return; }
+            area.innerHTML = buildDTable(['Jogador','Estádio','País Sede','ID Jogo'], fil,
+                d => `<td class="d-pk">${dNil(d[0])}</td><td>${dNil(d[1])}</td>
+<td><span class="d-green">${dNil(d[2])}</span></td><td>${dNil(d[3])}</td>`);
+        } catch(e) { area.innerHTML = dState('error',e.message); }
+    }
+
+    async function carregarSelecoesTopo() {
+        const area = document.getElementById('v2-area');
+        area.innerHTML = dState('loading','Consultando view...');
+        try {
+            const data = await dFetch('/views/topo');
+            if (!data.length) { area.innerHTML = dState('empty','Nenhum resultado'); return; }
+            area.innerHTML = buildDTable(['Seleção','Ranking FIFA','Mascote'], data,
+                d => `<td class="d-pk">${dNil(d[0])}</td>
+<td><span class="d-badge">#${dNil(d[1])}</span></td>
+<td><span class="d-green">${dNil(d[2])}</span></td>`);
+            document.getElementById('v2-chart').style.display = 'block';
+            dBarChart('chart-topo', data.map(d => d[0]), data.map(d => d[1]), 'Ranking FIFA', 'rgba(42,57,141,.7)');
+        } catch(e) { area.innerHTML = dState('error',e.message); }
+    }
+
+    /* ══════════════════════════════════════════
+    CONSULTAS SQL
+    ══════════════════════════════════════════ */
+    async function carregarMediaContinentes() {
+        const min = document.getElementById('q1-min').value || 25;
+        const area = document.getElementById('q1-area');
+        area.innerHTML = dState('loading','Consultando...');
+        try {
+            const data = await dFetch(`/estatisticas/continentes?minMedia=${min}`);
+            if (!data.length) { area.innerHTML = dState('empty','Nenhum resultado'); document.getElementById('q1-chart').style.display='none'; return; }
+            area.innerHTML = buildDTable(['Continente','Média de Idade'], data,
+                d => `<td class="d-pk">${dNil(d[0])}</td><td><span class="d-green">${parseFloat(d[1]).toFixed(1)}</span></td>`);
+            document.getElementById('q1-chart').style.display = 'block';
+            dBarChart('chart-cont', data.map(d => d[0]), data.map(d => parseFloat(d[1]).toFixed(1)), 'Média Idade', 'rgba(2,185,6,.65)');
+        } catch(e) { area.innerHTML = dState('error',e.message); }
+    }
+
+    async function carregarSemJogadores() {
+        const area = document.getElementById('q2-area');
+        area.innerHTML = dState('loading','Consultando...');
+        try {
+            const data = await dFetch('/api/selecoes-sem-jogadores');
+            if (!data.length) {
+                area.innerHTML = `<div style="padding:1.2rem;text-align:center;font-size:.78rem;color:var(--green-d);background:var(--green-l);border-radius:8px;border:1.5px solid rgba(2,185,6,.25);">✓ Todas as seleções possuem ao menos um jogador.</div>`;
+                return;
+            }
+            area.innerHTML = buildDTable(['Inscrição','Nome','Continente','Grupo FK'], data,
+                d => `<td class="d-pk">${dNil(d.inscricao)}</td><td>${dNil(d.nome)}</td>
+<td>${dNil(d.continente)}</td><td><span class="d-badge">${dNil(d.fk_grupo_letra_identificacao)}</span></td>`);
+        } catch(e) { area.innerHTML = dState('error',e.message); }
+    }
+
+    async function carregarJogMascote() {
+        const sel = document.getElementById('q3-sel').value.trim();
+        const area = document.getElementById('q3-area');
+        if (!sel) { area.innerHTML = dState('empty','Informe o nome da seleção'); return; }
+        area.innerHTML = dState('loading','Consultando...');
+        try {
+            const data = await dFetch(`/api/jogadores-mascote?selecao=${encodeURIComponent(sel)}`);
+            if (!data.length) { area.innerHTML = dState('empty','Nenhum resultado'); return; }
+            area.innerHTML = buildDTable(['Jogador','Seleção','Mascote'], data,
+                d => `<td class="d-pk">${dNil(d[0])}</td><td>${dNil(d[1])}</td><td><span class="d-green">${dNil(d[2])}</span></td>`);
+        } catch(e) { area.innerHTML = dState('error',e.message); }
+    }
+
+    async function carregarJogosDestaque() {
+        const pts = document.getElementById('q4-pts').value || 5;
+        const area = document.getElementById('q4-area');
+        area.innerHTML = dState('loading','Consultando...');
+        try {
+            const data = await dFetch(`/api/jogos-destaque?pontuacao=${pts}`);
+            if (!data.length) { area.innerHTML = dState('empty','Nenhum resultado'); return; }
+            area.innerHTML = buildDTable(['ID','Placar','Vencedor'], data,
+                d => `<td class="d-pk">${dNil(d.id)}</td><td><span class="d-green">${dNil(d.placar)}</span></td><td>${dNil(d.vencedor)}</td>`);
+        } catch(e) { area.innerHTML = dState('error',e.message); }
+    }
+</script>
+</body>
+</html>
