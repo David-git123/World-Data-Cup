@@ -66,7 +66,60 @@ public class EstatisticaRepository {
         );
     }
 
+    public List<Object[]> retornarCategoriaEstadios(){
 
+        String sql = """
+            SELECT nome,
+                capacidade_maxima,
+                fn_categoria_estadio(id) AS categoria
+            FROM estadio
+        """;
 
+        return jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> new Object[]{
+                        rs.getString("nome"),
+                        rs.getInt("capacidade_maxima"),
+                        rs.getString("categoria")
+                }
+        );
+    }
 
+    public List<Object[]> listarLogs(){
+
+        String sql = "SELECT * FROM logs_auditoria";
+
+        return jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> new Object[]{
+                        rs.getInt("id"),
+                        rs.getString("tabela_nome"),
+                        rs.getString("acao"),
+                        rs.getString("valor_antigo"),
+                        rs.getString("valor_novo"),
+                        rs.getTimestamp("data_hora")
+                }
+        );
+    }
+
+    public List<Object[]> mediaIdadeContinente(){
+
+        String sql = """
+            SELECT s.continente,
+                AVG(j.idade) AS media_geral_idade
+            FROM selecao s
+            JOIN jogador j
+            ON s.inscricao = j.fk_selecao_inscricao
+            GROUP BY s.continente
+            HAVING AVG(j.idade) > 25
+        """;
+
+        return jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> new Object[]{
+                        rs.getString("continente"),
+                        rs.getDouble("media_geral_idade")
+                }
+        );
+    }
 }
