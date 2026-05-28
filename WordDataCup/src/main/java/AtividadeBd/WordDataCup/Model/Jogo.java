@@ -19,6 +19,9 @@ public class Jogo {
         this.tipoJogo = tipoJogo;
     }
 
+    public Jogo() {
+    }
+
     public int getId() {
         return id;
     }

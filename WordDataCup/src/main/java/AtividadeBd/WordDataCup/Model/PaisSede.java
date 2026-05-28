@@ -14,6 +14,10 @@ public class PaisSede {
         this.nomeMascote = nomeMascote;
     }
 
+    public PaisSede(){
+        
+    }
+
     public String getNomePais(){
         return nomePais;
     }

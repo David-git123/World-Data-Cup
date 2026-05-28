@@ -1,6 +1,9 @@
 package AtividadeBd.WordDataCup.Repository;
 
 import AtividadeBd.WordDataCup.Model.ComissaoTecnica;
+
+import java.util.List;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -36,6 +39,21 @@ public class ComissaoTecnicaRepository {
         String sql = "DELETE FROM comissao_tecnica WHERE inscricao = ?";
         jdbcTemplate.update(sql,
                 comissaoTecnica.getInscricao()
+        );
+    }
+    
+    public List<ComissaoTecnica> listarTodos(){
+
+        String sql = "SELECT * FROM comissao_tecnica";
+
+        return jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> new ComissaoTecnica(
+                        rs.getString("nome"),
+                        rs.getString("nacionalidade"),
+                        rs.getInt("inscricao"),
+                        rs.getInt("fk_inscricao_selecao")
+                )
         );
     }
 

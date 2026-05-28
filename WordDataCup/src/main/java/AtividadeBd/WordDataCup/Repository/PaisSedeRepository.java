@@ -1,8 +1,13 @@
 package AtividadeBd.WordDataCup.Repository;
 
 import AtividadeBd.WordDataCup.Model.PaisSede;
-import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.List;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+@Repository
 public class PaisSedeRepository {
     private final JdbcTemplate jdbcTemplate;
 
@@ -20,7 +25,7 @@ public class PaisSedeRepository {
         );
     }
     public void atualizarPaisSede(PaisSede paisSede){
-        String sql= "UPDATE pais_sede SET numero_jogo_do_pais = ?, numero_estadios = ?, nome_mascote = ? WHERE pais_sede = ?";
+        String sql= "UPDATE pais_sede SET numero_jogos_do_pais = ?, numero_estadios = ?, nome_mascote = ? WHERE nome_pais = ?";
         jdbcTemplate.update(sql,
                 paisSede.getNumeroJogosDopais(),
                 paisSede.getNumeroEstadios(),
@@ -30,9 +35,24 @@ public class PaisSedeRepository {
     }
 
     public void deletarPaisSede(PaisSede paisSede){
-        String sql = "DELETE FROM pais_sede WHERE = nome_pais = ?";
+        String sql = "DELETE FROM pais_sede WHERE nome_pais = ?";
         jdbcTemplate.update(sql,
                 paisSede.getNomePais()
         );
+    }
+
+    public List<PaisSede> listarTodos(){
+        String sql = "SELECT * FROM pais_sede";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            PaisSede paisSede = new PaisSede();
+            
+            paisSede.setNomePais(rs.getString("nome_pais"));
+            paisSede.setNumeroJogosDopais(rs.getInt("numero_jogos_do_pais"));
+            paisSede.setNumeroEstadios(rs.getInt("numero_estadios"));
+            paisSede.setNomeMascote(rs.getString("nome_mascote"));
+            
+            return paisSede;
+        });
     }
 }

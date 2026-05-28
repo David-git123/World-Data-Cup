@@ -5,10 +5,13 @@ public class Mascote {
     private int fkInscricaoSelecao;
     private int id;
 
-    public Mascote(String nome,int inscricao, int fkInscricaoSelecao){
+    public Mascote(String nome,int id, int fkInscricaoSelecao){
         this.nome = nome;
         this.id = id;
         this.fkInscricaoSelecao = fkInscricaoSelecao;
+    }
+
+    public Mascote() {
     }
 
     public String getNome() {

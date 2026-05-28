@@ -1,6 +1,9 @@
 package AtividadeBd.WordDataCup.Repository;
 
 import AtividadeBd.WordDataCup.Model.Jogador;
+
+import java.util.List;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -54,6 +57,24 @@ public class JogadorRepository {
         );
 
         System.out.println("Exclusão feita");
+    }
+
+        public List<Jogador> listarTodos(){
+
+        String sql = "SELECT * FROM jogador";
+
+        return jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> new Jogador(
+                        rs.getInt("numero_da_camisa"),
+                        rs.getInt("inscricao"),
+                        rs.getString("posicao"),
+                        rs.getString("nome"),
+                        rs.getInt("idade"),
+                        rs.getInt("fk_selecao_inscricao"),
+                        rs.getInt("capitao")
+                )
+        );
     }
 
 }

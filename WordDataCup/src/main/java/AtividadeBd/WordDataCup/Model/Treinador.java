@@ -13,6 +13,10 @@ public class Treinador {
         this.metodologiaTreino = metodologiaTreino;
     }
 
+    public Treinador(){
+        
+    }
+
     public int getFkComissaoTecnicaInscricao() {
         return fkComissaoTecnicaInscricao;
     }

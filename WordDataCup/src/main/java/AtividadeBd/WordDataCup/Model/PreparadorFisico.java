@@ -11,6 +11,10 @@ public class PreparadorFisico {
        this.metodologiaTreino = metodologiaTreino;
    }
 
+   public PreparadorFisico(){
+    
+   }
+
     public int getFkComissaoTecnicaInscricao() {
         return fkComissaoTecnicaInscricao;
     }

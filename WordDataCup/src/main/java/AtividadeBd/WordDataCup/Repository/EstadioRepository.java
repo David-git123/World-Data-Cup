@@ -3,6 +3,7 @@ package AtividadeBd.WordDataCup.Repository;
 import AtividadeBd.WordDataCup.Model.Estadio;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import java.util.List;
 
 @Repository
 public class EstadioRepository {
@@ -42,4 +43,20 @@ public class EstadioRepository {
                 estadio.getId()
         );
     }
+
+    public List<Estadio> listarTodos(){
+
+    String sql = "SELECT * FROM estadio";
+
+    return jdbcTemplate.query(
+            sql,
+            (rs, rowNum) -> new Estadio(
+                    rs.getInt("id"),
+                    rs.getString("cidade"),
+                    rs.getInt("capacidade_maxima"),
+                    rs.getString("nome"),
+                    rs.getString("fk_pais_sede_nome_pais")
+            )
+    );
+}
 }

@@ -23,6 +23,9 @@ public class Selecao {
 		 this.nome = nome;
 		 this.fk_grupo_letra_identificacao = fk_grupo_letra_identificacao;
 	}
+
+	public Selecao() {
+    }
 	
 	public int getInscricao() {
 		return inscricao;
@@ -57,15 +60,15 @@ public class Selecao {
 		this.inscricao = inscricao;
 	}
 
-	public void setMedia_idade(int media_idade) {
-		this.media_idade = media_idade;
-	}
+	public void setMediaIdade(int media_idade) {
+        this.media_idade = media_idade;
+    }
 
-	public void setMedia_gols(int media_gols) {
+	public void setMediaGols(int media_gols) {
 		this.media_gols = media_gols;
 	}
 
-	public void setRanking_da_fifa(int ranking_da_fifa) {
+	public void setRankingFifa(int ranking_da_fifa) {
 		this.ranking_da_fifa = ranking_da_fifa;
 	}
 

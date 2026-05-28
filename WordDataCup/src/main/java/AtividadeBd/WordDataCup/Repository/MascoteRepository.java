@@ -1,8 +1,13 @@
 package AtividadeBd.WordDataCup.Repository;
 
 import AtividadeBd.WordDataCup.Model.Mascote;
-import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.List;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+@Repository
 public class MascoteRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -18,14 +23,15 @@ public class MascoteRepository {
                 mascote.getId(),
                 mascote.getNome(),
                 mascote.getfkSelecaoInscricao()
-        );
+);
     }
 
     public void atualizarMascote(Mascote mascote){
         String sql = "UPDATE mascote SET nome = ?, fk_selecao_inscricao = ? WHERE id = ? ";
         jdbcTemplate.update(sql,
                 mascote.getNome(),
-                mascote.getfkSelecaoInscricao()
+                mascote.getfkSelecaoInscricao(),
+                mascote.getId()
         );
     }
 
@@ -34,6 +40,19 @@ public class MascoteRepository {
         jdbcTemplate.update(sql,
                 mascote.getId()
         );
+    }
+
+    public List<Mascote> listarTodos(){
+        String sql = "SELECT * FROM mascote";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Mascote mascote = new Mascote();
+            
+            mascote.setId(rs.getInt("id"));
+            mascote.setNome(rs.getString("nome"));
+            mascote.setFkInscricaoSelecao(rs.getInt("fk_selecao_inscricao"));            
+            return mascote;
+        });
     }
 
 

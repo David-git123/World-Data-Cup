@@ -1,8 +1,13 @@
 package AtividadeBd.WordDataCup.Repository;
 
 import AtividadeBd.WordDataCup.Model.Jogo;
-import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.List;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+@Repository
 public class JogoRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -31,7 +36,8 @@ public class JogoRepository {
                 jogo.getData(),
                 jogo.getVencedor(),
                 jogo.getPerdedor(),
-                jogo.getTipoJogo()
+                jogo.getTipoJogo(),
+                jogo.getId()
         );
     }
 
@@ -40,5 +46,27 @@ public class JogoRepository {
         jdbcTemplate.update(sql,
                 jogo.getId()
         );
+    }
+    public List<Jogo> listarTodos(){
+
+        String sql = "SELECT * FROM jogo";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Jogo jogo = new Jogo();
+            
+            jogo.setId(rs.getInt("id"));
+            jogo.setPlacar(rs.getString("placar"));
+            
+            // Correção aqui: convertendo Timestamp para LocalDateTime
+            if (rs.getTimestamp("data") != null) {
+                jogo.setData(rs.getTimestamp("data").toLocalDateTime());
+            }
+            
+            jogo.setVencedor(rs.getString("vencedor"));
+            jogo.setPerdedor(rs.getString("perdedor"));
+            jogo.setTipoJogo(rs.getString("tipo_jogo"));
+            
+            return jogo;
+        });
     }
 }
