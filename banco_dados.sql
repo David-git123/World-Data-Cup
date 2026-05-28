@@ -527,3 +527,316 @@ INSERT INTO participa_jogo_estadio_jogador (fk_jogador_inscricao, fk_jogo_id, fk
 (16, 4, 7), (28, 4, 7), (17, 6, 9), (18, 5, 20), (19, 5, 20),
 (20, 5, 20), (21, 5, 20), (22, 3, 11), (23, 3, 11), (24, 9, 18),
 (25, 12, 19), (26, 7, 15), (27, 14, 26), (29, 8, 17), (30, 10, 12);
+
+SELECT s.continente, AVG(j.idade) AS media_geral_idade
+FROM selecao s  
+JOIN jogador j ON s.inscricao = j.fk_selecao_inscricao  
+GROUP BY s.continente  
+HAVING AVG(j.idade) > 25;  
+
+SELECT j.nome AS Nome_Jogador, s.nome AS Nome_Selecao, m.nome AS Nome_Mascote 
+FROM jogador j 
+JOIN selecao s ON j.fk_selecao_inscricao = s.inscricao 
+JOIN mascote m ON s.inscricao = m.fk_selecao_inscricao 
+WHERE s.nome = 'Brasil'; 
+
+SELECT s.nome  
+FROM selecao s 
+LEFT JOIN jogador j ON s.inscricao = j.fk_selecao_inscricao 
+WHERE j.inscricao IS NULL; 
+
+SELECT id, placar, vencedor  
+FROM jogo  
+WHERE vencedor IN (SELECT nome FROM selecao WHERE pontuacao > 5); 
+
+CREATE VIEW v_escalacao_estadios AS 
+SELECT j.nome AS jogador, e.nome AS estadio, ps.nome_pais AS sede, jo.id AS id_jogo 
+FROM jogador j 
+JOIN participa_jogo_estadio_jogador pje ON j.inscricao = pje.fk_jogador_inscricao 
+JOIN estadio e ON pje.fk_estadio_id = e.id 
+JOIN pais_sede ps ON e.fk_pais_sede_nome_pais = ps.nome_pais 
+JOIN jogo jo ON pje.fk_jogo_id = jo.id 
+WHERE jo.tipo_jogo = 'Fase de Grupos'; 
+
+CREATE VIEW v_selecoes_topo AS 
+SELECT s.nome AS selecao, s.ranking_da_fifa, m.nome AS mascote 
+FROM selecao s 
+JOIN mascote m ON s.inscricao = m.fk_selecao_inscricao 
+WHERE s.ranking_da_fifa < (SELECT AVG(ranking_da_fifa) FROM selecao); 
+
+CREATE INDEX idx_fk_selecao ON jogador(fk_selecao_inscricao);  
+
+CREATE INDEX idx_ranking_fifa ON selecao(ranking_da_fifa); 
+
+SET GLOBAL log_bin_trust_function_creators = 1;
+
+-- Automatiza a atualização de pontos(3 por vitória, 1 por empate) e o recálculo da média móvel de gols de uma seleção após o término de uma partida
+
+CREATE PROCEDURE atualizar_pontuacao_selecao (
+  p_inscricao   INT,
+  p_resultado   VARCHAR(10),
+  p_gols_feitos INT
+)
+UPDATE selecao
+SET
+  pontuacao  = pontuacao +
+    CASE p_resultado
+      WHEN 'vitoria' THEN 3
+      WHEN 'empate'  THEN 1
+      ELSE 0
+    END,
+  media_gols = ROUND((media_gols + p_gols_feitos) / 2,0)
+WHERE inscricao = p_inscricao;
+
+CALL atualizar_pontuacao_selecao(1, 'vitoria', 5);
+DROP PROCEDURE atualizar_pontuacao_selecao;
+
+-- Classifica as seleções de um grupo do 1º ao 4º lugar, ordenando-as pelos critérios oficiais de desempate do torneio (pontuação e ranking FIFA). O cursor preenche as vagas físicas da tabela de grupos para definir quem avança de fase. 
+
+DELIMITER $$
+CREATE PROCEDURE atualizar_lugares_grupo (p_letra CHAR(1))
+BEGIN
+  DECLARE done      INT DEFAULT FALSE;
+  DECLARE v_nome    VARCHAR(30);
+  DECLARE v_posicao INT DEFAULT 1;
+
+  DECLARE cur_grupos CURSOR FOR
+    SELECT nome FROM selecao
+    WHERE fk_grupo_letra_identificadora = p_letra
+    ORDER BY pontuacao DESC, ranking_da_fifa ASC;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+  UPDATE grupo
+  SET lugar1 = 'A definir', lugar2 = 'A definir',
+      lugar3 = 'A definir', lugar4 = 'A definir'
+  WHERE letra_identificadora = p_letra;
+
+  OPEN cur_grupos;
+
+  cursor_loop: LOOP
+    FETCH cur_grupos INTO v_nome;
+
+    IF done THEN
+      LEAVE cursor_loop;
+    END IF;
+
+    CASE v_posicao
+      WHEN 1 THEN
+        UPDATE grupo SET lugar1 = v_nome WHERE letra_identificadora = p_letra;
+      WHEN 2 THEN
+        UPDATE grupo SET lugar2 = v_nome WHERE letra_identificadora = p_letra;
+      WHEN 3 THEN
+        UPDATE grupo SET lugar3 = v_nome WHERE letra_identificadora = p_letra;
+      WHEN 4 THEN
+        UPDATE grupo SET lugar4 = v_nome WHERE letra_identificadora = p_letra;
+    END CASE;
+
+    SET v_posicao = v_posicao + 1;
+  END LOOP;
+
+  CLOSE cur_grupos;
+END $$
+DELIMITER ;
+
+CALL atualizar_lugares_grupo('A');
+DROP PROCEDURE atualizar_lugares_grupo; 
+
+-- Função com estrutura condicional que classifica o porte do estádio baseado na sua capacidade máxima
+
+DELIMITER $$
+
+CREATE FUNCTION fn_categoria_estadio (id_estadio INT)
+RETURNS VARCHAR(20)
+DETERMINISTIC
+BEGIN
+    DECLARE cap INT;
+    DECLARE categoria VARCHAR(20);
+    
+    SELECT capacidade_maxima INTO cap 
+    FROM estadio 
+    WHERE id = id_estadio;
+    
+    IF cap >= 80000 THEN 
+        SET categoria = 'Elite';
+    ELSEIF cap >= 60000 THEN 
+        SET categoria = 'Grande';
+    ELSEIF cap >= 45000 THEN 
+        SET categoria = 'Médio';
+    ELSE 
+        SET categoria = 'Pequeno';
+    END IF;
+    
+    RETURN categoria;
+END $$
+
+DELIMITER ;
+
+SELECT nome, capacidade_maxima, fn_categoria_estadio(1) AS categoria 
+FROM estadio WHERE id = 1;
+
+SELECT nome, capacidade_maxima, fn_categoria_estadio(8) AS categoria 
+FROM estadio WHERE id = 8;
+
+
+-- Função que categoriza as seleções de acordo com a idade média
+
+DELIMITER $$
+
+CREATE FUNCTION categorizar_maturidade_selecao(id_selecao INT)
+RETURNS VARCHAR(30)
+DETERMINISTIC
+BEGIN
+    DECLARE idade_media INT;
+    DECLARE categoria VARCHAR(30);
+    
+    SELECT media_idade INTO idade_media 
+    FROM selecao 
+    WHERE inscricao = id_selecao;
+    
+    CASE 
+        WHEN idade_media IS NULL THEN 
+            SET categoria = 'Não informada';
+        WHEN idade_media >= 28 THEN 
+            SET categoria = 'Elenco Experiente';
+        WHEN idade_media >= 24 THEN 
+            SET categoria = 'Elenco Equilibrado';
+        ELSE 
+            SET categoria = 'Elenco Jovem';
+    END CASE; 
+    
+    RETURN categoria;
+END $$
+
+DELIMITER ;
+
+SELECT nome, media_idade, categorizar_maturidade_selecao(inscricao) AS maturidade FROM selecao;  
+
+-- TABELA DE LOGS
+-- Justificativa semântica:
+-- Em um sistema de torneio, alterações em dados críticos, como a pontuação de uma seleção, precisam ser auditadas. Isso permite rastrear quem alterou, quando alterou e qual foi a mudança realizada.
+
+
+CREATE TABLE IF NOT EXISTS logs_auditoria (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tabela_nome VARCHAR(100) NOT NULL,
+  acao VARCHAR(20) NOT NULL,
+  chave_registro VARCHAR(200) NOT NULL,
+  coluna_alterada VARCHAR(100) NOT NULL,
+  valor_antigo TEXT,
+  valor_novo TEXT,
+  usuario VARCHAR(100),
+  data_hora DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- TRIGGER 1
+-- Justificativa semântica:
+-- Sempre que a pontuação de uma seleção mudar, registramos o evento na tabela de logs para manter histórico e auditoria. Isso é coerente com o domínio esportivo, porque a pontuação influencia classificação, avanço de fase e resultado do torneio.
+
+
+DELIMITER $$
+
+
+CREATE TRIGGER trg_audit_update_selecao
+AFTER UPDATE ON selecao
+FOR EACH ROW
+BEGIN
+  IF OLD.pontuacao <> NEW.pontuacao THEN
+    INSERT INTO logs_auditoria (
+      tabela_nome,
+      acao,
+      chave_registro,
+      coluna_alterada,
+      valor_antigo,
+      valor_novo,
+      usuario
+    )
+    VALUES (
+      'selecao',
+      'UPDATE',
+      CONCAT('inscricao=', OLD.inscricao),
+      'pontuacao',
+      OLD.pontuacao,
+      NEW.pontuacao,
+      COALESCE(USER(), 'sistema')
+    );
+  END IF;
+END$$
+
+
+DELIMITER ;
+
+
+
+
+-- TABELA DE FALTAS/CARTÕES
+-- Justificativa semântica:
+-- No ambito esportivo, cartões vermelhos representam uma punição disciplinar. Registrar esse evento em uma tabela própria permite controlar suspensões e manter a regra do jogo de forma centralizada no banco.
+
+
+CREATE TABLE IF NOT EXISTS cartoes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  fkjogadorinscricao INT NOT NULL,
+  fkjogoid INT NOT NULL,
+  tipo_cartao ENUM('amarelo','vermelho') NOT NULL,
+  minuto INT,
+  data_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (fkjogadorinscricao) REFERENCES jogador(inscricao) ON DELETE CASCADE,
+  FOREIGN KEY (fkjogoid) REFERENCES jogo(id) ON DELETE CASCADE
+);
+
+
+
+
+-- TABELA DE SUSPENSÕES
+-- Justificativa semântica:
+-- Quando um jogador recebe cartão vermelho, ele precisa ficar suspenso por uma partida. Esta tabela guarda a penalidade para controle disciplinar do torneio.
+
+
+CREATE TABLE IF NOT EXISTS suspensoes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  fkjogadorinscricao INT NOT NULL,
+  jogos_a_cumprir INT NOT NULL DEFAULT 0,
+  motivo VARCHAR(200),
+  data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_suspensao_jogador (fkjogadorinscricao),
+  FOREIGN KEY (fkjogadorinscricao) REFERENCES jogador(inscricao) ON DELETE CASCADE
+);
+
+
+
+
+-- TRIGGER 2
+-- Justificativa semântica:
+-- Ao inserir um cartão vermelho, o banco atualiza a suspensão do jogador automaticamente. Isso evita inconsistência entre a punição registrada e a regra disciplinar aplicada.
+
+
+DELIMITER $$
+
+
+CREATE TRIGGER trg_cartao_vermelho_ins
+AFTER INSERT ON cartoes
+FOR EACH ROW
+BEGIN
+  IF NEW.tipo_cartao = 'vermelho' THEN
+    INSERT INTO suspensoes (
+      fkjogadorinscricao,
+      jogos_a_cumprir,
+      motivo
+    )
+    VALUES (
+      NEW.fkjogadorinscricao,
+      1,
+      CONCAT('Cartão vermelho no jogo id=', NEW.fkjogoid)
+    )
+    ON DUPLICATE KEY UPDATE
+      jogos_a_cumprir = jogos_a_cumprir + 1,
+      motivo = VALUES(motivo),
+      data_registro = CURRENT_TIMESTAMP;
+  END IF;
+END$$
+
+
+DELIMITER ;
+
