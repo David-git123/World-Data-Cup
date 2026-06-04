@@ -13,7 +13,7 @@ public class ProcedureController {
         this.procedureRepository = procedureRepository;
     }
 
-    @GetMapping("/pontuacao")
+    @PostMapping("/pontuacao")
     public String atualizarPontuacao(
             @RequestParam int inscricao,
             @RequestParam String resultado,
@@ -29,7 +29,7 @@ public class ProcedureController {
         return "Pontuação atualizada";
     }
 
-    @GetMapping("/grupo")
+    @PostMapping("/grupo")
     public String atualizarGrupo(
             @RequestParam char letra
     ){

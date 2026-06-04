@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/estatisticas")
+@RequestMapping("/api/estatisticas")
 public class EstatisticaController {
 
     private final EstatisticaRepository estatisticaRepository;
