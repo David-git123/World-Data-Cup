@@ -31,7 +31,7 @@ public class ProcedureController {
 
     @PostMapping("/grupo")
     public String atualizarGrupo(
-            @RequestParam char letra
+            @RequestParam String letra
     ){
 
         procedureRepository.atualizarLugaresGrupo(letra);

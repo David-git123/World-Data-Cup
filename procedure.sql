@@ -2,26 +2,31 @@ SET GLOBAL log_bin_trust_function_creators = 1;
 
 -- Automatiza a atualização de pontos(3 por vitória, 1 por empate) e o recálculo da média móvel de gols de uma seleção após o término de uma partida
 
+DROP PROCEDURE IF EXISTS atualizar_pontuacao_selecao;
+
+DELIMITER $$
 CREATE PROCEDURE atualizar_pontuacao_selecao (
   p_inscricao   INT,
   p_resultado   VARCHAR(10),
   p_gols_feitos INT
 )
-UPDATE selecao
-SET
-  pontuacao  = pontuacao +
-    CASE p_resultado
-      WHEN 'vitoria' THEN 3
-      WHEN 'empate'  THEN 1
-      ELSE 0
-    END,
-  media_gols = ROUND((media_gols + p_gols_feitos) / 2,0)
-WHERE inscricao = p_inscricao;
+BEGIN
+  UPDATE selecao
+  SET
+    pontuacao  = pontuacao +
+      CASE p_resultado
+        WHEN 'vitoria' THEN 3
+        WHEN 'empate'  THEN 1
+        ELSE 0
+      END,
+    media_gols = ROUND((media_gols + p_gols_feitos) / 2, 0)
+  WHERE inscricao = p_inscricao;
+END $$
+DELIMITER ;
 
-CALL atualizar_pontuacao_selecao(1, 'vitoria', 5);
-DROP PROCEDURE atualizar_pontuacao_selecao;
+-- Classifica as seleções de um grupo do 1º ao 4º lugar, ordenando-as pelos critérios oficiais de desempate do torneio (pontuação e ranking FIFA). O cursor preenche as vagas físicas da tabela de grupos para definir quem avança de fase.
 
--- Classifica as seleções de um grupo do 1º ao 4º lugar, ordenando-as pelos critérios oficiais de desempate do torneio (pontuação e ranking FIFA). O cursor preenche as vagas físicas da tabela de grupos para definir quem avança de fase. 
+DROP PROCEDURE IF EXISTS atualizar_lugares_grupo;
 
 DELIMITER $$
 CREATE PROCEDURE atualizar_lugares_grupo (p_letra CHAR(1))
@@ -68,6 +73,3 @@ BEGIN
   CLOSE cur_grupos;
 END $$
 DELIMITER ;
-
-CALL atualizar_lugares_grupo('A');
-DROP PROCEDURE atualizar_lugares_grupo; 

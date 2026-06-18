@@ -28,7 +28,7 @@ public class ProcedureRepository {
         );
     }
 
-    public void atualizarLugaresGrupo(char letra){
+    public void atualizarLugaresGrupo(String letra){
 
         String sql = "CALL atualizar_lugares_grupo(?)";
 
