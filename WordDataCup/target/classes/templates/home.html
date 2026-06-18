@@ -682,6 +682,49 @@
         .ticker-hl  { color: #fff; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── BANDEIRA BRASIL ─── */
+        .bandeira-wrap {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            position: relative;
+        }
+        .bandeira-mastro {
+            width: 3px;
+            height: 80px;
+            background: linear-gradient(to bottom, #f5d040 0%, #9a7c00 100%);
+            border-radius: 3px 3px 1px 1px;
+            flex-shrink: 0;
+            position: relative;
+            margin-top: -4px;
+            box-shadow: 1px 0 4px rgba(0,0,0,.4);
+        }
+        .bandeira-mastro::before {
+            content: '✦';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffdf00;
+            font-size: .65rem;
+            filter: drop-shadow(0 0 5px rgba(255,223,0,.9));
+            animation: blink 2.2s ease-in-out infinite;
+        }
+        .bandeira-svg {
+            width: 100px;
+            cursor: pointer;
+            border-radius: 1px 3px 3px 1px;
+            box-shadow: 2px 4px 18px rgba(0,0,0,.5);
+            transition: filter .35s;
+            display: block;
+        }
+        .bandeira-svg:hover {
+            filter: brightness(1.1) drop-shadow(0 0 10px rgba(255,223,0,.55));
+        }
+        @media (max-width: 768px) {
+            .bandeira-wrap { display: none; }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -691,7 +734,66 @@
     <div>
         <div class="header-eyebrow">Sistema de Gerenciamento</div>
         <h1>World <em>Data</em><br>Cup</h1>
+
+        <!-- Bandeira do Brasil interativa -->
+        <div class="bandeira-wrap" title="Brasil — Clique para celebrar!" style="margin-top:.5rem;margin-bottom:.75rem;">
+            <div class="bandeira-mastro"></div>
+            <svg class="bandeira-svg" id="bandeiraBrasil"
+                 viewBox="0 0 200 133" xmlns="http://www.w3.org/2000/svg"
+                 role="img" aria-label="Bandeira do Brasil">
+                <defs>
+                    <filter id="waveBrasil" x="-5%" y="-5%" width="110%" height="110%">
+                        <feTurbulence id="turbBrasil" type="fractalNoise"
+                            baseFrequency="0.022 0.065" numOctaves="3" result="noise" seed="7">
+                            <animate attributeName="baseFrequency"
+                                values="0.022 0.065;0.042 0.11;0.022 0.065"
+                                dur="3.8s" repeatCount="indefinite"/>
+                        </feTurbulence>
+                        <feDisplacementMap id="displBrasil" in="SourceGraphic" in2="noise"
+                            scale="7" xChannelSelector="R" yChannelSelector="G"/>
+                    </filter>
+                    <clipPath id="clipBrasil">
+                        <rect width="200" height="133" rx="2"/>
+                    </clipPath>
+                    <path id="textArcBrasil" d="M 73,72 Q 100,57 127,72" fill="none"/>
+                </defs>
+                <g clip-path="url(#clipBrasil)" filter="url(#waveBrasil)">
+                    <!-- Verde -->
+                    <rect width="200" height="133" fill="#009c3b"/>
+                    <!-- Losango amarelo -->
+                    <polygon points="100,7 195,66.5 100,126 5,66.5" fill="#ffdf00"/>
+                    <!-- Circulo azul -->
+                    <circle cx="100" cy="66.5" r="33" fill="#002776"/>
+                    <!-- Faixa branca -->
+                    <path d="M 71,73 Q 100,56 129,73"
+                          stroke="white" stroke-width="7.5" fill="none" stroke-linecap="round"/>
+                    <!-- ORDEM E PROGRESSO -->
+                    <text font-size="5.2" font-family="Arial,sans-serif"
+                          fill="#009c3b" font-weight="bold" letter-spacing="0.55">
+                        <textPath href="#textArcBrasil" startOffset="5%">ORDEM E PROGRESSO</textPath>
+                    </text>
+                    <!-- Cruz do Sul -->
+                    <circle cx="80" cy="59" r="2.2" fill="white"/>
+                    <circle cx="74" cy="69" r="1.6" fill="white"/>
+                    <circle cx="80" cy="79" r="2.6" fill="white"/>
+                    <circle cx="87" cy="69" r="1.9" fill="white"/>
+                    <circle cx="82" cy="72" r="1.1" fill="white"/>
+                    <!-- Outras estrelas -->
+                    <circle cx="94" cy="49" r="1.5" fill="white"/>
+                    <circle cx="103" cy="46" r="1.2" fill="white"/>
+                    <circle cx="110" cy="51" r="1.7" fill="white"/>
+                    <circle cx="117" cy="58" r="2.0" fill="white"/>
+                    <circle cx="116" cy="67" r="1.3" fill="white"/>
+                    <circle cx="111" cy="75" r="1.4" fill="white"/>
+                    <circle cx="88" cy="47" r="1.3" fill="white"/>
+                    <circle cx="96" cy="83" r="1.2" fill="white"/>
+                    <circle cx="106" cy="80" r="1.0" fill="white"/>
+                    <circle cx="90" cy="55" r="1.1" fill="white"/>
+                </g>
+            </svg>
+        </div>
         <p class="header-sub">Banco de dados do Mundial de Clubes FIFA 2026 — gestão de seleções, jogadores e partidas em tempo real.</p>
+
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:.75rem; position:relative;">
         <div class="status-pill">
@@ -1945,7 +2047,7 @@ ${tipo === 'vermelho' ? '<br><span style="color:var(--red)">⚡ Trigger disparad
     function dispararConfete() {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         var cores = ['#02B906','#FFDB00','#E61D25','#2A398D','#ffffff','#019504','#C9AB00'];
-        for (var i = 0; i < 60; i++) {
+        for (var i = 0; i < 160; i++) {
             var c = document.createElement('div');
             c.className = 'confete';
             var dur = 1.3 + Math.random() * 1.4;
@@ -1995,6 +2097,58 @@ ${tipo === 'vermelho' ? '<br><span style="color:var(--red)">⚡ Trigger disparad
         _showResOrig(id, type, title, html);
         if (type === 's-ok') dispararConfete();
     };
+
+    // Bandeira do Brasil interativa
+    (function iniciarBandeira() {
+        var svg    = document.getElementById('bandeiraBrasil');
+        var turb   = document.getElementById('turbBrasil');
+        var displ  = document.getElementById('displBrasil');
+        if (!svg || !turb || !displ) return;
+
+        var turbAnim = turb.querySelector('animate');
+
+        function setVento(intensidade) {
+            displ.setAttribute('scale', String(intensidade));
+            if (turbAnim) {
+                var f = intensidade > 10
+                    ? '0.04 0.1;0.08 0.18;0.04 0.1'
+                    : '0.022 0.065;0.042 0.11;0.022 0.065';
+                var d = intensidade > 20 ? '1.2s' : intensidade > 10 ? '2s' : '3.8s';
+                turbAnim.setAttribute('values', f);
+                turbAnim.setAttribute('dur', d);
+            }
+        }
+
+        // hover — vento forte
+        svg.addEventListener('mouseenter', function() { setVento(20); });
+        svg.addEventListener('mouseleave', function() { setVento(7); });
+
+        // click — rajada + confete verde/amarelo/azul
+        svg.addEventListener('click', function() {
+            setVento(38);
+            setTimeout(function() { setVento(7); }, 900);
+
+            // confete nas cores do Brasil
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            var coresBrasil = ['#009c3b','#ffdf00','#002776','#ffffff','#009c3b','#ffdf00'];
+            for (var i = 0; i < 160; i++) {
+                var c = document.createElement('div');
+                c.className = 'confete';
+                var dur = 1.2 + Math.random() * 1.6;
+                c.style.cssText = [
+                    'left:' + (10 + Math.random() * 80) + 'vw',
+                    'background:' + coresBrasil[i % coresBrasil.length],
+                    'width:' + (5 + Math.random() * 9) + 'px',
+                    'height:' + (5 + Math.random() * 9) + 'px',
+                    'border-radius:' + (Math.random() > .4 ? '50%' : '2px'),
+                    'animation-duration:' + dur + 's',
+                    'animation-delay:' + (Math.random() * .5) + 's'
+                ].join(';');
+                document.body.appendChild(c);
+                setTimeout(function(el) { el.remove(); }, (dur + .6) * 1000, c);
+            }
+        });
+    })();
 </script>
 </body>
 </html>
